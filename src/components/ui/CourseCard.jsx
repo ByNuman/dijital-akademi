@@ -27,9 +27,8 @@ export function CourseCard({ course }) {
                     <div className="flex items-center text-brand-gold text-sm font-bold bg-brand-gold/10 px-2 py-1 rounded-full">
                         <Star className="w-4 h-4 fill-current mr-1" />
                         <span>{course.rating}</span>
-                        <span className="text-gray-400 text-xs ml-1 font-normal">({course.reviews})</span>
+                        <span className="text-gray-400 text-xs ml-1 font-normal">({course.reviews || (course.students ? `${course.students}+` : '')})</span>
                     </div>
-                    <p className="text-white font-bold text-lg">{course.price}</p>
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 leading-tight">{course.title}</h3>

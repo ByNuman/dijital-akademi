@@ -59,8 +59,8 @@ export function Courses() {
                             key={category}
                             onClick={() => setSelectedCategory(category)}
                             className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${selectedCategory === category
-                                    ? "bg-brand-gold text-brand-black shadow-[0_0_15px_rgba(251,191,36,0.3)]"
-                                    : "bg-[#1A1A1A] text-gray-400 border border-white/5 hover:border-brand-gold/30 hover:text-white"
+                                ? "bg-brand-gold text-brand-black shadow-[0_0_15px_rgba(251,191,36,0.3)]"
+                                : "bg-[#1A1A1A] text-gray-400 border border-white/5 hover:border-brand-gold/30 hover:text-white"
                                 }`}
                         >
                             {category}
@@ -122,9 +122,6 @@ export function Courses() {
                                             <div className="flex items-center gap-1.5">
                                                 <Users className="w-4 h-4" />
                                                 <span>{course.students}</span>
-                                            </div>
-                                            <div className="font-bold text-brand-gold">
-                                                {course.price}
                                             </div>
                                         </div>
 

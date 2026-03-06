@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, FileText, CheckCircle2, ChevronRight, Star, Clock, Users, BookOpen, Shield } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { courses } from "../data/coursesData";
+import { useLibrary } from "../context/LibraryContext";
 
 export function CourseDetail() {
     const { id } = useParams();
@@ -11,6 +12,7 @@ export function CourseDetail() {
     const course = courses.find(c => c.id === courseId) || courses[0];
 
     const [activeTab, setActiveTab] = useState("mufredat");
+    const { addToLibrary, isCourseInLibrary } = useLibrary();
 
     // Mock Curriculum
     const modules = [
@@ -191,18 +193,28 @@ export function CourseDetail() {
                                 </div>
                             </div>
 
-                            <div className="text-4xl font-black text-brand-gold mb-6">
-                                {course.price}
+                            <div className="flex items-center gap-2 mb-6">
+                                <div className="bg-green-500/10 text-green-400 px-4 py-2 rounded-xl font-bold border border-green-500/20 w-fit">
+                                    %100 Ücretsiz Eğitim
+                                </div>
                             </div>
 
                             <Link to={`/learn/${course.id}`}>
-                                <Button variant="primary" className="w-full justify-center py-4 text-lg font-bold mb-4">
-                                    Dersi Kaydet / Başla
+                                <Button variant="primary" className="w-full justify-center py-4 text-lg font-bold mb-4 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.5)]">
+                                    Hemen Eğitime Başla
                                 </Button>
                             </Link>
 
-                            <Button variant="outline" className="w-full justify-center py-3 mb-6">
-                                Daha Sonra Hatırlat
+                            <Button
+                                variant={isCourseInLibrary(course.id) ? "primary" : "outline"}
+                                className={`w-full justify-center py-3 mb-6 ${isCourseInLibrary(course.id) ? "bg-brand-slate text-brand-gold border-brand-gold/30 hover:bg-brand-slate" : ""}`}
+                                onClick={() => addToLibrary(course)}
+                            >
+                                {isCourseInLibrary(course.id) ? (
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-5 h-5" /> Kütüphanenizde
+                                    </div>
+                                ) : "Kütüphaneme Ekle"}
                             </Button>
 
                             <div className="space-y-4 pt-6 border-t border-white/5">

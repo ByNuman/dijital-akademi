@@ -8,18 +8,21 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { courses } from "../data/coursesData";
+import { toast } from "sonner";
+import { useLibrary } from "../context/LibraryContext";
 
 export function CoursePlayer() {
     const { id } = useParams();
     const courseId = parseInt(id) || 1;
     const course = courses.find(c => c.id === courseId) || courses[0];
+    const { addXp } = useLibrary();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeLesson, setActiveLesson] = useState(1);
     const [activeTab, setActiveTab] = useState("genel_bakis"); // genel_bakis, materyaller, tartisma
 
-    // Mock Curriculum Structure
-    const curriculum = [
+    // Change Curriculum to State for interactivity
+    const [curriculum, setCurriculum] = useState([
         {
             id: 1,
             title: "Modül 1: Giriş ve Temel Kavramlar",
@@ -38,9 +41,34 @@ export function CoursePlayer() {
                 { id: 6, title: "Modül Sonu Değerlendirmesi", duration: "10 Soru", type: "quiz", completed: false },
             ]
         }
-    ];
+    ]);
+
+    const toggleLessonComplete = (lessonId, e) => {
+        e.stopPropagation(); // prevent setActiveLesson if clicking exactly on complete icon (though we apply it to generic click here)
+        setCurriculum(prev => prev.map(mod => ({
+            ...mod,
+            lessons: mod.lessons.map(l => {
+                if (l.id === lessonId) {
+                    const act = !l.completed;
+                    if (act) {
+                        toast.success(`"${l.title}" tamamlandı işaretlendi!`, {
+                            style: { background: "#10B981", color: "#fff", border: "none" }
+                        });
+                        addXp(100);
+                    }
+                    return { ...l, completed: act };
+                }
+                return l;
+            })
+        })));
+    };
 
     const currentLessonData = curriculum.flatMap(m => m.lessons).find(l => l.id === activeLesson);
+
+    // Calculate total progress
+    const allLessons = curriculum.flatMap(m => m.lessons);
+    const completedCount = allLessons.filter(l => l.completed).length;
+    const progressPercentage = Math.round((completedCount / allLessons.length) * 100);
 
     return (
         <div className="min-h-screen flex flex-col bg-[#101010] overflow-hidden">
@@ -65,9 +93,14 @@ export function CoursePlayer() {
                 {/* Progress Mini Status */}
                 <div className="flex items-center gap-4">
                     <div className="hidden md:flex items-center gap-3 mr-4">
-                        <span className="text-xs font-semibold text-gray-400">İlerleme %45</span>
+                        <span className="text-xs font-semibold text-gray-400">İlerleme %{progressPercentage}</span>
                         <div className="w-32 h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                            <div className="h-full bg-gradient-to-r from-brand-gold to-brand-gold-dark w-[45%] rounded-full"></div>
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progressPercentage}%` }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                className="h-full bg-gradient-to-r from-brand-gold to-brand-gold-dark rounded-full"
+                            ></motion.div>
                         </div>
                     </div>
                 </div>
@@ -103,15 +136,19 @@ export function CoursePlayer() {
                                                     key={lesson.id}
                                                     onClick={() => setActiveLesson(lesson.id)}
                                                     className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-all ${activeLesson === lesson.id
-                                                            ? "bg-brand-gold/10 border-brand-gold/30 border"
-                                                            : "hover:bg-white/5 border border-transparent"
+                                                        ? "bg-brand-gold/10 border-brand-gold/30 border"
+                                                        : "hover:bg-white/5 border border-transparent"
                                                         }`}
                                                 >
-                                                    <div className="mt-0.5 shrink-0">
+                                                    <div
+                                                        className="mt-0.5 shrink-0 cursor-pointer"
+                                                        onClick={(e) => toggleLessonComplete(lesson.id, e)}
+                                                        title="Tamamlandı olarak işaretle"
+                                                    >
                                                         {lesson.completed ? (
-                                                            <CheckCircle2 className="w-5 h-5 text-brand-gold" />
+                                                            <CheckCircle2 className="w-5 h-5 text-brand-gold hover:text-white transition-colors" />
                                                         ) : (
-                                                            <FileText className={`w-5 h-5 ${activeLesson === lesson.id ? "text-brand-gold" : "text-gray-500"}`} />
+                                                            <div className={`w-5 h-5 rounded-full border-2 hover:border-brand-gold transition-colors flex items-center justify-center ${activeLesson === lesson.id ? "border-brand-gold/50" : "border-gray-500"}`}></div>
                                                         )}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
