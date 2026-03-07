@@ -1,170 +1,290 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-    LayoutDashboard, Users, BookOpen, BarChart3, Settings,
-    Plus, Edit, Trash2, Search, Filter, MoreVertical, CheckCircle2
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { db } from "../config/firebase";
+import { collection, setDoc, doc, getDocs, deleteDoc, updateDoc } from "firebase/firestore";
+import { courses as coursesData } from "../data/coursesData";
+import { toast } from "sonner";
 import { Button } from "../components/ui/Button";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Database, LayoutDashboard, LayoutList, Trash2, Edit, BookOpen, Users, Trophy } from "lucide-react";
 
 export function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState("overview");
+    const { userData } = useAuth();
+    const [activeTab, setActiveTab] = useState("overview"); // overview, addCourse, courses, tools
+    const [isMigrating, setIsMigrating] = useState(false);
+    const [courses, setCourses] = useState([]);
+    const [usersCount, setUsersCount] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [editingCourse, setEditingCourse] = useState(null);
+    const [moduleForm, setModuleForm] = useState({
+        title: "",
+        imageUrl: "",
+        description: "",
+        pdfUrl: "",
+        slideUrl: "",
+        audioUrl: "",
+        duration: "",
+        testUrl: ""
+    });
 
-    const stats = [
-        { title: "Toplam Öğrenci", value: "2,450", change: "+120 bu ay", icon: Users },
-        { title: "Aktif Eğitimler", value: "24", change: "+2 eklendi", icon: BookOpen },
-        { title: "Tamamlanan Modül", value: "18,200", change: "+1.2k bu hafta", icon: CheckCircle2 },
-        { title: "Sistem Sağlığı", value: "%99.9", change: "Sorunsuz", icon: BarChart3 },
-    ];
-
-    const mockCourses = [
-        { id: 1, title: "İslami İlimlere Giriş", instructor: "Prof. Dr. İbrahim Halil", students: 1200, status: "Aktif" },
-        { id: 2, title: "Tefsir Usulü ve Tarihi", instructor: "Doç. Dr. Ahmet Yılmaz", students: 850, status: "Aktif" },
-        { id: 3, title: "Arapça Belagat", instructor: "Dr. Zeynep Kaya", students: 430, status: "Taslak" },
-    ];
-
-    const renderContent = () => {
-        if (activeTab === "overview") {
-            return (
-                <div className="space-y-8">
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {stats.map((stat, idx) => {
-                            const Icon = stat.icon;
-                            return (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: idx * 0.1 }}
-                                    key={idx}
-                                    className="bg-[#1A1A1A] border border-white/5 rounded-2xl p-6"
-                                >
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center">
-                                            <Icon className="w-6 h-6 text-brand-gold" />
-                                        </div>
-                                    </div>
-                                    <h4 className="text-gray-400 text-sm mb-1 font-medium">{stat.title}</h4>
-                                    <div className="text-3xl font-black text-white mb-2">{stat.value}</div>
-                                    <div className="text-xs text-emerald-400 font-semibold">{stat.change}</div>
-                                </motion.div>
-                            )
-                        })}
-                    </div>
-
-                    {/* Chart Mockup Area */}
-                    <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 h-80 flex flex-col justify-center items-center text-center">
-                        <BarChart3 className="w-16 h-16 text-white/10 mb-4" />
-                        <h3 className="text-xl font-bold text-white mb-2">Aylık Aktif Kullanıcı Grafiği</h3>
-                        <p className="text-gray-500">Bu alana chart.js veya recharts kütüphanesi entegre edilebilir.</p>
-                    </div>
-                </div>
-            );
-        }
-
-        if (activeTab === "courses") {
-            return (
-                <div className="space-y-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#1A1A1A] p-4 rounded-2xl border border-white/5">
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <div className="bg-white/5 border border-white/10 rounded-lg p-2.5 flex items-center flex-1 sm:w-64">
-                                <Search className="w-4 h-4 text-gray-500 mr-2 shrink-0" />
-                                <input type="text" placeholder="Ders ara..." className="bg-transparent border-none focus:outline-none text-white text-sm w-full" />
-                            </div>
-                            <Button variant="outline" className="min-h-0 h-[42px] px-3 border-white/10">
-                                <Filter className="w-4 h-4" />
-                            </Button>
-                        </div>
-                        <Button variant="primary" className="w-full sm:w-auto flex items-center gap-2 h-[42px] min-h-0 text-sm">
-                            <Plus className="w-4 h-4" /> Yeni Ders Ekle
-                        </Button>
-                    </div>
-
-                    <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-white/[0.02] border-b border-white/5">
-                                    <tr>
-                                        <th className="px-6 py-4 font-bold text-gray-400">Ders Adı</th>
-                                        <th className="px-6 py-4 font-bold text-gray-400">Eğitmen</th>
-                                        <th className="px-6 py-4 font-bold text-gray-400">Kayıtlı Öğrenci</th>
-                                        <th className="px-6 py-4 font-bold text-gray-400">Durum</th>
-                                        <th className="px-6 py-4 font-bold text-gray-400 text-right">İşlemler</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mockCourses.map((course) => (
-                                        <tr key={course.id} className="border-b border-white/5 hover:bg-white/[0.01] transition-colors">
-                                            <td className="px-6 py-4 font-bold text-white">{course.title}</td>
-                                            <td className="px-6 py-4 text-gray-300">{course.instructor}</td>
-                                            <td className="px-6 py-4 text-gray-300">{course.students.toLocaleString()}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${course.status === 'Aktif' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-gray-500/10 text-gray-400'}`}>
-                                                    {course.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button className="p-2 text-gray-400 hover:text-brand-gold transition-colors"><Edit className="w-4 h-4" /></button>
-                                                    <button className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            )
-        }
-
-        return (
-            <div className="bg-[#1A1A1A] border border-white/5 border-dashed rounded-3xl p-12 text-center">
-                <Settings className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">Bu Modül Yapım Aşamasında</h3>
-                <p className="text-gray-400 max-w-sm mx-auto">Seçtiğiniz yönetim modülü şu an geliştirilmektedir. Yakında aktif edilecektir.</p>
-            </div>
-        )
+    const predefinedCourses = {
+        "Hadis 2": "Temel İslam Bilimleri",
+        "İslam Hukuk Usulü 2": "Temel İslam Bilimleri",
+        "Kelam Tarihi": "Temel İslam Bilimleri",
+        "Tefsir 2": "Temel İslam Bilimleri",
+        "Din Psikolojisi": "Felsefe ve Din Bilimleri",
+        "Din Sosyolojisi": "Felsefe ve Din Bilimleri",
+        "Felsefe Tarihi 2": "Felsefe ve Din Bilimleri",
+        "İslam Tarihi 3": "İslam Tarihi ve Sanatları",
+        "Arap Dili ve Edebiyatı 4": "Dil Eğitimi",
+        "Öğretim İlke ve Yöntemleri": "Eğitim Bilimleri / Pedagojik Formasyon"
     };
 
+    // Form states
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        category: "Temel İslam Bilimleri",
+        coverImage: "",
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
+
+    const fetchDashboardData = async () => {
+        setIsLoading(true);
+        try {
+            // Fetch courses
+            const coursesSnap = await getDocs(collection(db, "courses"));
+            const coursesList = coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setCourses(coursesList);
+
+            // Fetch users (if admin has permission, just getting count for now)
+            try {
+                const usersSnap = await getDocs(collection(db, "users"));
+                setUsersCount(usersSnap.size);
+            } catch (err) {
+                // If rules restrict reading all users, ignore error
+                console.log("Could not fetch user count, probably rules restricted", err);
+            }
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+            toast.error("Veriler alınırken hata oluştu.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        let newCategory = formData.category;
+        
+        if (name === "title" && predefinedCourses[value]) {
+            newCategory = predefinedCourses[value];
+        }
+
+        setFormData(prev => ({ 
+            ...prev, 
+            [name]: value,
+            category: newCategory
+        }));
+    };
+
+    const handleAddCourse = async (e) => {
+        e.preventDefault();
+        
+        if (!formData.title || !formData.description || !formData.category) {
+            toast.error("Lütfen zorunlu alanları doldurun.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const courseId = formData.title.toLowerCase().replace(/[^a-z0-9]/g, '-');
+            const newCourse = {
+                ...formData,
+                id: courseId,
+                rating: 0,
+                students: 0,
+                price: 0, // Ücretsiz default
+                level: "Tüm Seviyeler",
+                duration: "Belirtilmedi",
+                instructor: userData?.name || "Eğitmen Akademi",
+                tags: [],
+                modules: [
+                    {
+                        title: "Giriş ve Kurulum",
+                        imageUrl: "",
+                        description: "Bu derse giriş modülüdür.",
+                        pdfUrl: "",
+                        slideUrl: "",
+                        audioUrl: "",
+                        duration: "5 dk",
+                        testUrl: ""
+                    }
+                ]
+            };
+
+            await setDoc(doc(db, "courses", courseId), newCourse);
+            
+            toast.success("Ders başarıyla eklendi!", {
+                style: { background: "#FBBF24", color: "#101010", border: "none" }
+            });
+            
+            setFormData({
+                title: "",
+                description: "",
+                category: "Temel İslam Bilimleri",
+                coverImage: "",
+            });
+            
+            fetchDashboardData(); // Refresh list
+            setActiveTab("courses");
+            
+        } catch (error) {
+            console.error("Ders ekleme hatası:", error);
+            toast.error("Ders eklenirken bir hata oluştu: " + error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteCourse = async (courseId) => {
+        if (!window.confirm("Bu dersi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.")) return;
+        
+        try {
+            await deleteDoc(doc(db, "courses", courseId));
+            toast.success("Ders silindi.");
+            fetchDashboardData();
+        } catch (error) {
+            console.error("Ders silme hatası:", error);
+            toast.error("Silme işlemi başarısız: " + error.message);
+        }
+    };
+
+    const handleEditCourseChange = (e) => {
+        const { name, value } = e.target;
+        setEditingCourse(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleUpdateCourse = async (e) => {
+        e.preventDefault();
+        if (!editingCourse.title || !editingCourse.description || !editingCourse.category) {
+            toast.error("Lütfen zorunlu alanları doldurun.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await updateDoc(doc(db, "courses", editingCourse.id), editingCourse);
+            toast.success("Ders detayları ve konuları başarıyla güncellendi!", {
+                style: { background: "#10B981", color: "#fff", border: "none" }
+            });
+            fetchDashboardData();
+            setActiveTab("courses");
+            setEditingCourse(null);
+        } catch (error) {
+            console.error("Güncelleme hatası:", error);
+            toast.error("Güncellenirken bir hata oluştu: " + error.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleAddModule = () => {
+        if (!moduleForm.title) {
+            toast.error("Konu başlığı zorunludur.");
+            return;
+        }
+        setEditingCourse(prev => ({
+            ...prev,
+            modules: [...(prev.modules || []), moduleForm]
+        }));
+        setModuleForm({ title: "", imageUrl: "", description: "", pdfUrl: "", slideUrl: "", audioUrl: "", testUrl: "", duration: "" });
+        toast.success("Konu dizeye eklendi (Değişiklikleri kaydetmeyi unutmayın).");
+    };
+
+    const handleDeleteModule = (index) => {
+        if (!window.confirm("Bu konuyu listeden çıkarmak istediğinize emin misiniz?")) return;
+        setEditingCourse(prev => {
+            const newModules = [...(prev.modules || [])];
+            newModules.splice(index, 1);
+            return { ...prev, modules: newModules };
+        });
+    };
+
+    const migrateDataToFirebase = async () => {
+        if (!window.confirm("Bütün mock veriler (coursesData.js) Firebase'e yazılacak. Mevcut aynı ID'ye sahip dersler ezilecek. Onaylıyor musunuz?")) return;
+
+        setIsMigrating(true);
+        try {
+            for (const course of coursesData) {
+                const courseRef = doc(db, "courses", course.id.toString());
+                await setDoc(courseRef, course);
+            }
+            toast.success("Tüm veriler başarıyla Firebase'e eklendi!", {
+                style: { background: "#FBBF24", color: "#101010", border: "none" }
+            });
+            fetchDashboardData();
+        } catch (error) {
+            console.error("Migration error:", error);
+            toast.error("Veri aktarımı sırasında bir hata oluştu: " + error.message, {
+                style: { background: "#EF4444", color: "#FFFFFF", border: "none" }
+            });
+        } finally {
+            setIsMigrating(false);
+        }
+    };
+
+    const tabs = [
+        { id: "overview", label: "Genel Bakış", icon: LayoutDashboard },
+        { id: "courses", label: "Dersler", icon: LayoutList },
+        { id: "addCourse", label: "Ders Ekle", icon: Plus },
+        { id: "tools", label: "Araçlar", icon: Database },
+    ];
+
+    if (userData?.role !== "admin") {
+        return null; // Should be handled by AdminRoute, logic kept just in case
+    }
+
     return (
-        <div className="pt-24 pb-20 min-h-screen">
-            <div className="container mx-auto px-6 md:px-12 max-w-7xl">
-
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 mt-4">
-                    <div>
-                        <h1 className="text-3xl font-black text-white mb-1"><span className="text-brand-gold">Yönetim</span> Paneli</h1>
-                        <p className="text-gray-400 text-sm">Akademi içeriklerini ve öğrencileri buradan yönetin.</p>
-                    </div>
-                </div>
-
-                <div className="flex flex-col lg:flex-row gap-8">
-
-                    {/* Admin Sidebar */}
-                    <div className="w-full lg:w-64 shrink-0">
-                        <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-4 sticky top-28 space-y-1">
-                            {[
-                                { id: "overview", label: "Genel Bakış", icon: LayoutDashboard },
-                                { id: "courses", label: "Ders Yönetimi", icon: BookOpen },
-                                { id: "users", label: "Öğrenciler", icon: Users },
-                                { id: "settings", label: "Sistem Ayarları", icon: Settings },
-                            ].map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${activeTab === tab.id
-                                            ? "bg-brand-gold text-brand-black shadow-[0_0_15px_rgba(251,191,36,0.3)]"
-                                            : "text-gray-400 hover:bg-white/5 hover:text-white"
-                                        }`}
-                                >
-                                    <tab.icon className="w-5 h-5" />
-                                    {tab.label}
-                                </button>
-                            ))}
+        <div className="pt-32 pb-20 min-h-screen bg-[#101010]">
+            <div className="container mx-auto px-6">
+                <div className="flex flex-col md:flex-row gap-8">
+                    
+                    {/* Sidebar */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="w-full md:w-64 shrink-0"
+                    >
+                        <div className="bg-[#1A1A1A] p-6 rounded-2xl border border-white/5 sticky top-32">
+                            <h2 className="text-xl font-bold text-white mb-6">Yönetici Paneli</h2>
+                            <div className="space-y-2">
+                                {tabs.map((tab) => {
+                                    const Icon = tab.icon;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                                                activeTab === tab.id 
+                                                ? "bg-brand-gold text-brand-black font-semibold" 
+                                                : "text-gray-400 hover:text-white hover:bg-white/5"
+                                            }`}
+                                        >
+                                            <Icon size={18} />
+                                            {tab.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    {/* Main Content Area */}
+                    {/* Main Content */}
                     <div className="flex-1">
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -174,7 +294,428 @@ export function AdminDashboard() {
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                {renderContent()}
+                                {/* Overview Tab */}
+                                {activeTab === "overview" && (
+                                    <div className="space-y-6">
+                                        <h1 className="text-3xl font-bold text-white mb-6">Genel Bakış</h1>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            <div className="bg-[#1A1A1A] p-6 rounded-2xl border border-brand-gold/20">
+                                                <div className="w-12 h-12 bg-brand-gold/10 text-brand-gold rounded-full flex items-center justify-center mb-4">
+                                                    <BookOpen size={24} />
+                                                </div>
+                                                <h3 className="text-gray-400 text-sm font-medium">Toplam Ders</h3>
+                                                <p className="text-3xl font-bold text-white mt-1">{isLoading ? "..." : courses.length}</p>
+                                            </div>
+
+                                            <div className="bg-[#1A1A1A] p-6 rounded-2xl border border-brand-gold/20">
+                                                <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-full flex items-center justify-center mb-4">
+                                                    <Users size={24} />
+                                                </div>
+                                                <h3 className="text-gray-400 text-sm font-medium">Toplam Öğrenci</h3>
+                                                <p className="text-3xl font-bold text-white mt-1">{isLoading ? "..." : usersCount}</p>
+                                                <p className="text-xs text-gray-500 mt-2">* Güvenlik kuralları gereği tam sayı yansımayabilir.</p>
+                                            </div>
+
+                                            <div className="bg-[#1A1A1A] p-6 rounded-2xl border border-brand-gold/20">
+                                                <div className="w-12 h-12 bg-green-500/10 text-green-400 rounded-full flex items-center justify-center mb-4">
+                                                    <Trophy size={24} />
+                                                </div>
+                                                <h3 className="text-gray-400 text-sm font-medium">Sistem Durumu</h3>
+                                                <p className="text-3xl font-bold text-white mt-1">Aktif</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-[#1A1A1A] p-6 rounded-2xl border border-white/5 mt-8">
+                                            <h3 className="text-xl font-bold text-brand-gold mb-4">Hoş Geldiniz, {userData?.name}</h3>
+                                            <p className="text-gray-400 leading-relaxed">
+                                                Bu panel üzerinden platformdaki dersleri yönetebilir, yeni içerikler ekleyebilir ve istatistikleri takip edebilirsiniz. Tüm işlemler anında veritabanına yansıyacaktır.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Courses List Tab */}
+                                {activeTab === "courses" && (
+                                    <div className="space-y-6">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h1 className="text-3xl font-bold text-white">Mevcut Dersler</h1>
+                                            <Button onClick={() => setActiveTab("addCourse")} variant="primary" className="gap-2">
+                                                <Plus size={18} /> Yeni Ekle
+                                            </Button>
+                                        </div>
+
+                                        <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden">
+                                            {isLoading ? (
+                                                <div className="p-8 text-center text-gray-400">Yükleniyor...</div>
+                                            ) : courses.length === 0 ? (
+                                                <div className="p-8 text-center text-gray-400">Henüz ders bulunmuyor.</div>
+                                            ) : (
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left">
+                                                        <thead className="bg-[#222] border-b border-white/5">
+                                                            <tr>
+                                                                <th className="p-4 text-sm font-medium text-gray-400">Ders Adı</th>
+                                                                <th className="p-4 text-sm font-medium text-gray-400">Kategori</th>
+                                                                <th className="p-4 text-sm font-medium text-gray-400">Seviye</th>
+                                                                <th className="p-4 text-sm font-medium text-gray-400 text-right">İşlemler</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-white/5">
+                                                            {courses.map(course => (
+                                                                <tr key={course.id} className="hover:bg-white/[0.02] transition-colors">
+                                                                    <td className="p-4 text-white font-medium">{course.title}</td>
+                                                                    <td className="p-4 text-brand-gold">{course.category}</td>
+                                                                    <td className="p-4 text-gray-400">{course.level}</td>
+                                                                    <td className="p-4 text-right">
+                                                                        <div className="flex items-center justify-end gap-2">
+                                                                            <button 
+                                                                                onClick={() => {
+                                                                                    setEditingCourse(course);
+                                                                                    setActiveTab("editCourse");
+                                                                                }}
+                                                                                className="p-2 text-gray-400 hover:text-white transition-colors"
+                                                                                title="Dersi ve Konuları Düzenle"
+                                                                            >
+                                                                                <Edit size={16} />
+                                                                            </button>
+                                                                            <button 
+                                                                                onClick={() => handleDeleteCourse(course.id)}
+                                                                                className="p-2 text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                                                                            >
+                                                                                <Trash2 size={16} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Add Course Tab */}
+                                {activeTab === "addCourse" && (
+                                    <div className="space-y-6">
+                                        <h1 className="text-3xl font-bold text-white mb-6">Yeni Ders Ekle</h1>
+                                        
+                                        <form onSubmit={handleAddCourse} className="bg-[#1A1A1A] p-6 sm:p-8 rounded-2xl border border-white/5 space-y-6">
+                                            
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Ders Başlığı *</label>
+                                                <input 
+                                                    type="text" 
+                                                    name="title"
+                                                    value={formData.title}
+                                                    onChange={handleInputChange}
+                                                    list="course-list"
+                                                    className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                    placeholder="Örn: Hadis 2"
+                                                    required
+                                                />
+                                                <datalist id="course-list">
+                                                    {Object.keys(predefinedCourses).map(cName => (
+                                                        <option key={cName} value={cName} />
+                                                    ))}
+                                                </datalist>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Açıklama *</label>
+                                                <textarea 
+                                                    name="description"
+                                                    value={formData.description}
+                                                    onChange={handleInputChange}
+                                                    rows="4"
+                                                    className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors resize-none"
+                                                    placeholder="Ders hakkında detaylı bir açıklama girin..."
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Kategori</label>
+                                                <select 
+                                                    name="category"
+                                                    value={formData.category}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                >
+                                                    <option value="Temel İslam Bilimleri">Temel İslam Bilimleri</option>
+                                                    <option value="Felsefe ve Din Bilimleri">Felsefe ve Din Bilimleri</option>
+                                                    <option value="İslam Tarihi ve Sanatları">İslam Tarihi ve Sanatları</option>
+                                                    <option value="Dil Eğitimi">Dil Eğitimi</option>
+                                                    <option value="Eğitim Bilimleri / Pedagojik Formasyon">Eğitim Bilimleri / Pedagojik Formasyon</option>
+                                                </select>
+                                            </div>
+
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Kapak Fotoğrafı URL</label>
+                                                <input 
+                                                    type="url" 
+                                                    name="coverImage"
+                                                    value={formData.coverImage}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+
+                                            <div className="pt-4 border-t border-white/5">
+                                                <Button 
+                                                    type="submit" 
+                                                    variant="primary" 
+                                                    disabled={isSubmitting}
+                                                    className="w-full sm:w-auto min-w-[200px] font-bold py-4"
+                                                >
+                                                    {isSubmitting ? "Ders Ekleniyor..." : "Dersi Kaydet ve Yayınla"}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                )}
+
+                                {/* Edit Course Tab */}
+                                {activeTab === "editCourse" && editingCourse && (
+                                    <div className="space-y-6">
+                                        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center gap-4 mb-6">
+                                            <h1 className="text-3xl font-bold text-white leading-tight">
+                                                Dersi Düzenle: <span className="text-brand-gold">{editingCourse.title}</span>
+                                            </h1>
+                                            <Button onClick={() => setActiveTab("courses")} variant="outline" className="border-white/10 text-white shrink-0">
+                                                Geri Dön
+                                            </Button>
+                                        </div>
+                                        
+                                        <div className="bg-[#1A1A1A] p-6 sm:p-8 rounded-2xl border border-white/5 space-y-8">
+                                            {/* 1. Ders Detayları */}
+                                            <div>
+                                                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                                    <span className="w-8 h-8 rounded-full bg-brand-gold/10 text-brand-gold flex justify-center items-center text-sm">1</span> 
+                                                    Ders Genel Bilgileri
+                                                </h2>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium text-gray-300">Ders Başlığı</label>
+                                                        <input 
+                                                            type="text" 
+                                                            name="title"
+                                                            value={editingCourse.title}
+                                                            onChange={handleEditCourseChange}
+                                                            className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-medium text-gray-300">Kategori</label>
+                                                        <select 
+                                                            name="category"
+                                                            value={editingCourse.category}
+                                                            onChange={handleEditCourseChange}
+                                                            className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                        >
+                                                            <option value="Temel İslam Bilimleri">Temel İslam Bilimleri</option>
+                                                            <option value="Felsefe ve Din Bilimleri">Felsefe ve Din Bilimleri</option>
+                                                            <option value="İslam Tarihi ve Sanatları">İslam Tarihi ve Sanatları</option>
+                                                            <option value="Dil Eğitimi">Dil Eğitimi</option>
+                                                            <option value="Eğitim Bilimleri / Pedagojik Formasyon">Eğitim Bilimleri / Pedagojik Formasyon</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <label className="text-sm font-medium text-gray-300">Kapak Fotoğrafı URL</label>
+                                                        <input 
+                                                            type="text" 
+                                                            name="coverImage"
+                                                            value={editingCourse.coverImage || ""}
+                                                            onChange={handleEditCourseChange}
+                                                            className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <label className="text-sm font-medium text-gray-300">Açıklama</label>
+                                                        <textarea 
+                                                            name="description"
+                                                            value={editingCourse.description}
+                                                            onChange={handleEditCourseChange}
+                                                            rows="3"
+                                                            className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors resize-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="h-px bg-white/5 w-full"></div>
+
+                                            {/* 2. Modüller */}
+                                            <div>
+                                                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                                    <span className="w-8 h-8 rounded-full bg-brand-gold/10 text-brand-gold flex justify-center items-center text-sm">2</span> 
+                                                    Ders Konuları (Müfredat)
+                                                </h2>
+                                                
+                                                {/* Mevcut Modüller */}
+                                                <div className="space-y-3 mb-6">
+                                                    {(editingCourse.modules || []).length === 0 ? (
+                                                        <p className="text-gray-400 text-sm">Hiç konu eklenmemiş.</p>
+                                                    ) : (
+                                                        editingCourse.modules.map((mod, idx) => (
+                                                            <div key={idx} className="bg-[#222] p-4 rounded-xl border border-white/5 flex flex-col sm:flex-row justify-between sm:items-start gap-4">
+                                                                <div className="flex-1">
+                                                                    <h4 className="font-bold text-white text-lg">{idx + 1}. {mod.title}</h4>
+                                                                    <p className="text-sm text-gray-400 mt-1 line-clamp-2">{mod.description}</p>
+                                                                    <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500 bg-[#1A1A1A] p-2 rounded-lg inline-flex">
+                                                                        {mod.imageUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Resim</span>}
+                                                                        {mod.pdfUrl && <span className="text-brand-gold pr-2 border-r border-white/10">PDF</span>}
+                                                                        {mod.slideUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Slayt</span>}
+                                                                        {mod.audioUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Ses</span>}
+                                                                        {mod.duration && <span className="text-brand-gold pr-2 border-r border-white/10">{mod.duration}</span>}
+                                                                        {mod.testUrl && <span className="text-brand-gold">Test</span>}
+                                                                        {!(mod.imageUrl || mod.pdfUrl || mod.slideUrl || mod.audioUrl || mod.testUrl) && <span>İçerik yok</span>}
+                                                                    </div>
+                                                                </div>
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => handleDeleteModule(idx)} 
+                                                                    className="text-red-500 hover:bg-red-500/10 p-2 rounded shrink-0 self-end sm:self-auto transition-colors"
+                                                                    title="Konuyu Sil"
+                                                                >
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+
+                                                {/* Modül Ekleme Formu */}
+                                                <div className="bg-[#222] p-5 rounded-xl border border-brand-gold/20 space-y-4">
+                                                    <h4 className="font-semibold text-white flex items-center gap-2">
+                                                        <Plus size={16} className="text-brand-gold"/> Yeni Konu Ekle
+                                                    </h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <input 
+                                                                type="text" 
+                                                                placeholder="Konu Başlığı *" 
+                                                                value={moduleForm.title}
+                                                                onChange={(e) => setModuleForm({ ...moduleForm, title: e.target.value })}
+                                                                className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <input 
+                                                                type="url" 
+                                                                placeholder="Ders Resmi URL (İsteğe Bağlı)" 
+                                                                value={moduleForm.imageUrl || ''}
+                                                                onChange={(e) => setModuleForm({ ...moduleForm, imageUrl: e.target.value })}
+                                                                className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                        <input 
+                                                            type="url" 
+                                                            placeholder="PDF Linki (İsteğe Bağlı)" 
+                                                            value={moduleForm.pdfUrl || ''}
+                                                            onChange={(e) => setModuleForm({ ...moduleForm, pdfUrl: e.target.value })}
+                                                            className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                        />
+                                                        <input 
+                                                            type="url" 
+                                                            placeholder="Slayt Linki (İsteğe Bağlı)" 
+                                                            value={moduleForm.slideUrl || ''}
+                                                            onChange={(e) => setModuleForm({ ...moduleForm, slideUrl: e.target.value })}
+                                                            className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                        />
+                                                        <input 
+                                                            type="url" 
+                                                            placeholder="Ses Bağlantısı (İsteğe Bağlı)" 
+                                                            value={moduleForm.audioUrl || ''}
+                                                            onChange={(e) => setModuleForm({ ...moduleForm, audioUrl: e.target.value })}
+                                                            className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                        />
+                                                        <input 
+                                                            type="url" 
+                                                            placeholder="Google Form/Test (İsteğe Bağlı)" 
+                                                            value={moduleForm.testUrl || ''}
+                                                            onChange={(e) => setModuleForm({ ...moduleForm, testUrl: e.target.value })}
+                                                            className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                        />
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="Okuma Süresi (örn. 15 dk)" 
+                                                            value={moduleForm.duration || ''}
+                                                            onChange={(e) => setModuleForm({ ...moduleForm, duration: e.target.value })}
+                                                            className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                        />
+                                                    </div>
+
+                                                    <textarea 
+                                                        placeholder="Konu Açıklaması (İsteğe Bağlı)" 
+                                                        value={moduleForm.description}
+                                                        onChange={(e) => setModuleForm({ ...moduleForm, description: e.target.value })}
+                                                        rows="2"
+                                                        className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none resize-none transition-colors"
+                                                    />
+                                                    <div className="flex justify-end">
+                                                        <Button 
+                                                            type="button"
+                                                            onClick={handleAddModule} 
+                                                            className="bg-brand-gold hover:bg-brand-gold/90 text-brand-black px-6 font-semibold"
+                                                        >
+                                                            Üstteki Listeye Ekle
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-end items-center gap-4">
+                                                <p className="text-sm text-gray-500">Değişiklikleri yayına almak için kaydetmelisiniz.</p>
+                                                <Button 
+                                                    onClick={handleUpdateCourse} 
+                                                    variant="primary" 
+                                                    disabled={isSubmitting}
+                                                    className="w-full sm:w-auto font-bold py-3 px-8 text-base shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] transition-shadow"
+                                                >
+                                                    {isSubmitting ? "Kaydediliyor..." : "Tüm Değişiklikleri Kaydet"}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Tools Tab */}
+                                {activeTab === "tools" && (
+                                    <div className="space-y-6">
+                                        <h1 className="text-3xl font-bold text-white mb-6">Araçlar & Veritabanı</h1>
+                                        
+                                        <div className="bg-[#1A1A1A] p-8 rounded-3xl border border-red-500/20">
+                                            <div className="flex items-start gap-4">
+                                                <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center shrink-0">
+                                                    <Database size={24} />
+                                                </div>
+                                                <div>
+                                                    <h2 className="text-xl font-bold text-white mb-2">Mock Verileri Aktar</h2>
+                                                    <p className="text-gray-400 mb-6 leading-relaxed">
+                                                        Bu araç ile <code>src/data/coursesData.js</code> dosyasındaki test eğitimlerini Firebase <code>courses</code> koleksiyonuna hızlıca aktarabilirsiniz. <span className="text-red-400 font-medium">Dikkat: Çakışan ID'ye sahip verilerin üzerine yazılır.</span>
+                                                    </p>
+                                                    <Button 
+                                                        variant="primary" 
+                                                        onClick={migrateDataToFirebase}
+                                                        disabled={isMigrating}
+                                                        className="font-bold border border-red-500/50 hover:bg-red-500/20 bg-red-500/10 text-red-400"
+                                                    >
+                                                        {isMigrating ? "Veriler Aktarılıyor..." : "Mock Verileri Firebase'e Kopyala"}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         </AnimatePresence>
                     </div>

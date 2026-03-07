@@ -1,12 +1,15 @@
 import { motion } from "framer-motion";
+import { Helmet } from 'react-helmet-async';
 import { BookOpen, Clock, Calendar, PlayCircle, Trophy, Settings, SearchX } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { studentData } from "../data/studentData";
 import { useLibrary } from "../context/LibraryContext";
+import { useAuth } from "../context/AuthContext";
 
 export function Dashboard() {
     const { savedCourses, xp } = useLibrary();
+    const { userData } = useAuth();
 
     const currentLevel = Math.floor(xp / 500) + 1;
     const xpForNextLevel = currentLevel * 500;
@@ -14,16 +17,20 @@ export function Dashboard() {
 
     return (
         <div className="pt-24 pb-20 min-h-screen">
+            <Helmet>
+                <title>Öğrenci Paneli - Dijital Akademi</title>
+                <meta name="description" content="İslami ilimler derslerinize Kaldığınız yerden devam edin." />
+            </Helmet>
             <div className="container mx-auto px-6 md:px-12">
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-12 bg-[#1A1A1A] p-8 rounded-3xl border border-white/5">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                         <div className="w-24 h-24 rounded-full border-2 border-brand-gold p-1 overflow-hidden shrink-0">
-                            <img src={studentData.avatar} alt={studentData.name} className="w-full h-full rounded-full object-cover" />
+                            <img src={userData?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || 'Öğrenci')}&background=FBBF24&color=101010`} alt={userData?.name || "Öğrenci"} className="w-full h-full rounded-full object-cover" />
                         </div>
                         <div className="text-center md:text-left">
-                            <h1 className="text-3xl font-black text-white mb-2">Hoş Geldiniz, <span className="text-brand-gold">{studentData.name}</span></h1>
+                            <h1 className="text-3xl font-black text-white mb-2">Hoş Geldiniz, <span className="text-brand-gold">{userData?.name || "Öğrenci"}</span></h1>
                             <p className="text-gray-400">İlim yolculuğunuzda bugün nerede kalmıştık?</p>
                         </div>
                     </div>

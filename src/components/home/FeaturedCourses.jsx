@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { CourseCard } from "../ui/CourseCard";
-import { featuredCourses } from "../../data/mockData";
+import { useCourses } from "../../context/CoursesContext";
 import { Button } from "../ui/Button";
 
 export function FeaturedCourses() {
+    const { courses, loading } = useCourses();
+    const featuredCourses = courses.slice(0, 3);
     return (
         <section className="py-24 bg-[#141414] relative border-y border-white/5" id="dersler">
             <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
@@ -41,17 +43,23 @@ export function FeaturedCourses() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {featuredCourses.map((course, index) => (
-                        <motion.div
-                            key={course.id}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ delay: index * 0.15, duration: 0.6 }}
-                        >
-                            <CourseCard course={course} />
-                        </motion.div>
-                    ))}
+                    {loading ? (
+                        <div className="col-span-full flex justify-center py-10">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-gold"></div>
+                        </div>
+                    ) : (
+                        featuredCourses.map((course, index) => (
+                            <motion.div
+                                key={course.id}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{ delay: index * 0.15, duration: 0.6 }}
+                            >
+                                <CourseCard course={course} />
+                            </motion.div>
+                        ))
+                    )}
                 </div>
 
                 <div className="md:hidden flex justify-center mt-10">

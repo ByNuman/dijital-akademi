@@ -1,9 +1,15 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useAuth } from "./AuthContext";
+import { doc, updateDoc, arrayUnion, arrayRemove, increment } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 const LibraryContext = createContext();
 
 export function LibraryProvider({ children }) {
+    const { currentUser, userData } = useAuth();
+    
+    // Fallback to localStorage for guest users
     const [savedCourses, setSavedCourses] = useState(() => {
         const saved = localStorage.getItem("dijital_akademi_library");
         return saved ? JSON.parse(saved) : [];
@@ -11,18 +17,30 @@ export function LibraryProvider({ children }) {
 
     const [xp, setXp] = useState(() => {
         const savedXp = localStorage.getItem("dijital_akademi_xp");
-        return savedXp ? parseInt(savedXp, 10) : 150; // Default 150 XP for demo
+        return savedXp ? parseInt(savedXp, 10) : 150;
     });
 
     useEffect(() => {
-        localStorage.setItem("dijital_akademi_library", JSON.stringify(savedCourses));
-    }, [savedCourses]);
+        if (currentUser && userData) {
+            setSavedCourses(userData.enrolledCourses || []);
+            setXp(userData.xp || 150);
+        } else if (!currentUser) {
+            // Unauthenticated user - use localStorage
+            const saved = localStorage.getItem("dijital_akademi_library");
+            if (saved) setSavedCourses(JSON.parse(saved));
+            const savedXp = localStorage.getItem("dijital_akademi_xp");
+            if (savedXp) setXp(parseInt(savedXp, 10));
+        }
+    }, [currentUser, userData]);
 
     useEffect(() => {
-        localStorage.setItem("dijital_akademi_xp", xp.toString());
-    }, [xp]);
+        if (!currentUser) {
+            localStorage.setItem("dijital_akademi_library", JSON.stringify(savedCourses));
+            localStorage.setItem("dijital_akademi_xp", xp.toString());
+        }
+    }, [savedCourses, xp, currentUser]);
 
-    const addXp = (amount) => {
+    const addXp = async (amount) => {
         setXp(prev => {
             const newXp = prev + amount;
             const oldLevel = Math.floor(prev / 500) + 1;
@@ -40,13 +58,26 @@ export function LibraryProvider({ children }) {
             }
             return newXp;
         });
+
+        // Update in Firestore
+        if (currentUser) {
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, {
+                    xp: increment(amount)
+                });
+            } catch (error) {
+                console.error("Error updating XP in Firestore:", error);
+            }
+        }
     };
 
-    const addToLibrary = (course) => {
+    const addToLibrary = async (course) => {
         if (!savedCourses.find(c => c.id === course.id)) {
-            setSavedCourses(prev => [...prev, { ...course, progress: 0 }]);
+            const newCourseData = { ...course, progress: 0 };
+            setSavedCourses(prev => [...prev, newCourseData]);
 
-            // Özel tasarım toast bildirimi
+            // Toast
             toast.custom((t) => (
                 <div className="bg-[#1A1A1A] border border-brand-gold/30 rounded-xl p-4 shadow-[0_0_20px_rgba(251,191,36,0.15)] flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
@@ -58,6 +89,19 @@ export function LibraryProvider({ children }) {
                     </div>
                 </div>
             ), { duration: 4000 });
+
+            // Update in Firestore
+            if (currentUser) {
+                try {
+                    const userRef = doc(db, "users", currentUser.uid);
+                    await updateDoc(userRef, {
+                        enrolledCourses: arrayUnion(newCourseData)
+                    });
+                } catch (error) {
+                    console.error("Error adding course to Firestore library:", error);
+                }
+            }
+
             return true;
         } else {
             toast.custom((t) => (
@@ -69,8 +113,20 @@ export function LibraryProvider({ children }) {
         }
     };
 
-    const removeFromLibrary = (courseId) => {
+    const removeFromLibrary = async (courseId) => {
+        const courseToRemove = savedCourses.find(c => c.id === courseId);
         setSavedCourses(prev => prev.filter(c => c.id !== courseId));
+
+        if (currentUser && courseToRemove) {
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, {
+                    enrolledCourses: arrayRemove(courseToRemove)
+                });
+            } catch (error) {
+                console.error("Error removing course from Firestore:", error);
+            }
+        }
     };
 
     const isCourseInLibrary = (courseId) => {

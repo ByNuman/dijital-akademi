@@ -1,17 +1,31 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "../components/ui/Button";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "sonner";
 
 export function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const { loginUser } = useAuth();
+    const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Here you would typically handle the login logic
-        console.log("Login attempted with:", { email, password });
+        setLoading(true);
+        try {
+            await loginUser(email, password);
+            toast.success("Giriş başarılı! Yönlendiriliyorsunuz...");
+            navigate("/dashboard");
+        } catch (error) {
+            console.error("Login hatası:", error);
+            toast.error("Giriş yapılamadı: " + (error.message || "Bilinmeyen hata"));
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -77,9 +91,9 @@ export function Login() {
                             </div>
                         </div>
 
-                        <Button type="submit" variant="primary" className="w-full justify-center py-4 text-base font-bold flex border border-brand-gold/50 items-center gap-2 group mt-2">
-                            Giriş Yap
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <Button type="submit" disabled={loading} variant="primary" className="w-full justify-center py-4 text-base font-bold flex border border-brand-gold/50 items-center gap-2 group mt-2">
+                            {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
+                            {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
                         </Button>
                     </form>
 

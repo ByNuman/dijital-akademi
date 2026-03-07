@@ -2,10 +2,12 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Filter, Star, Users, Clock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { courses } from "../data/coursesData";
 import { Button } from "../components/ui/Button";
+import { useCourses } from "../context/CoursesContext";
+import { Helmet } from "react-helmet-async";
 
 export function Courses() {
+    const { courses, loading } = useCourses();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("Tümü");
 
@@ -20,6 +22,10 @@ export function Courses() {
 
     return (
         <div className="pt-32 pb-24 min-h-screen">
+            <Helmet>
+                <title>Tüm Eğitimler - Dijital Akademi</title>
+                <meta name="description" content="Tefsir, Fıkıh, Kelam, Arapça ve daha birçok İslami ilimler eğitimine ücretsiz erişin." />
+            </Helmet>
             {/* Header & Search */}
             <div className="container mx-auto px-6 md:px-12 mb-12">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
@@ -71,6 +77,11 @@ export function Courses() {
 
             {/* Courses Grid */}
             <div className="container mx-auto px-6 md:px-12">
+                {loading ? (
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-gold"></div>
+                    </div>
+                ) : (
                 <AnimatePresence mode="popLayout">
                     {filteredCourses.length > 0 ? (
                         <motion.div
@@ -95,7 +106,7 @@ export function Courses() {
                                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                                         />
                                         <div className="absolute top-4 left-4 z-20 flex gap-2">
-                                            {course.tags.slice(0, 1).map(tag => (
+                                            {(course.tags || []).slice(0, 1).map(tag => (
                                                 <span key={tag} className="bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/10">
                                                     {tag}
                                                 </span>
@@ -158,6 +169,7 @@ export function Courses() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+                )}
             </div>
         </div>
     );

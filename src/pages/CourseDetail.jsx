@@ -1,29 +1,48 @@
 import { useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, FileText, CheckCircle2, ChevronRight, Star, Clock, Users, BookOpen, Shield } from "lucide-react";
+import { motion } from "framer-motion";
+import { Play, FileText, CheckCircle2, ChevronRight, Star, Clock, Users, BookOpen } from "lucide-react";
 import { Button } from "../components/ui/Button";
-import { courses } from "../data/coursesData";
 import { useLibrary } from "../context/LibraryContext";
+import { useCourses } from "../context/CoursesContext";
 
 export function CourseDetail() {
     const { id } = useParams();
-    const courseId = parseInt(id) || 1; // Url numara değilse 1'e varsay
-    const course = courses.find(c => c.id === courseId) || courses[0];
+    const courseId = id || "1"; 
+    
+    const { courses, loading: contextLoading } = useCourses();
+    const course = courses.find(c => c.id === courseId) || null;
+    const loading = contextLoading;
 
     const [activeTab, setActiveTab] = useState("mufredat");
     const { addToLibrary, isCourseInLibrary } = useLibrary();
 
-    // Mock Curriculum
-    const modules = [
-        { id: 1, title: "Giriş ve Temel Kavramlar", duration: "1s 20d", lessons: 4 },
-        { id: 2, title: "Tarihsel Arka Plan", duration: "2s 15d", lessons: 6 },
-        { id: 3, title: "Klasik Metinler Üzerinden İnceleme", duration: "3s 45d", lessons: 8 },
-        { id: 4, title: "Modern Dönem Yansımaları", duration: "2s 10d", lessons: 5 },
-    ];
+    // Dinamik Müfredat
+    const modules = course?.modules || [];
+
+    if (loading) {
+        return (
+            <div className="pt-24 pb-20 min-h-screen flex justify-center items-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-gold"></div>
+            </div>
+        );
+    }
+
+    if (!course) {
+        return (
+            <div className="pt-24 pb-20 min-h-screen flex justify-center items-center">
+                <div className="text-white text-xl">Ders bulunamadı.</div>
+            </div>
+        );
+    }
 
     return (
         <div className="pt-24 pb-20 min-h-screen">
+            <Helmet>
+                <title>{course.title} - Dijital Akademi</title>
+                <meta name="description" content={`Dijital Akademi'de ${course.title} dersini ücretsiz olarak inceleyin ve hemen öğrenmeye başlayın. Eğitmen: ${course.instructor}`} />
+            </Helmet>
             {/* Header Hero Area */}
             <div className="relative bg-[#1A1A1A] py-16 md:py-24 border-b border-white/5">
                 <div className="absolute inset-0 overflow-hidden z-0">
@@ -127,26 +146,32 @@ export function CourseDetail() {
                                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                                     <h3 className="text-2xl font-bold text-white mb-6">Ders Müfredatı</h3>
                                     <div className="text-gray-400 mb-4 flex gap-4">
-                                        <span>{modules.length} Bölüm</span>
+                                        <span>{modules.length} Konu</span>
                                         <span>•</span>
-                                        <span>{modules.reduce((acc, curr) => acc + curr.lessons, 0)} Ders</span>
+                                        <span>1 Sınav Testi</span>
                                     </div>
-                                    {modules.map((module) => (
-                                        <div key={module.id} className="bg-[#1A1A1A] border border-white/5 rounded-xl overflow-hidden">
-                                            <div className="flex items-center justify-between p-6">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold font-bold">
-                                                        {module.id}
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-white font-bold text-lg">{module.title}</h4>
-                                                        <p className="text-gray-500 text-sm">{module.lessons} Ders • {module.duration}</p>
-                                                    </div>
-                                                </div>
-                                                <ChevronRight className="w-5 h-5 text-gray-500" />
-                                            </div>
+                                    {modules.length === 0 ? (
+                                        <div className="text-gray-500 py-8 text-center border-dashed border border-white/10 rounded-xl">
+                                            Bu ders için henüz müfredat oluşturulmamış.
                                         </div>
-                                    ))}
+                                    ) : (
+                                        modules.map((module, index) => (
+                                            <div key={module.id || `mod-${index}`} className="bg-[#1A1A1A] border border-white/5 rounded-xl overflow-hidden">
+                                                <div className="flex items-center justify-between p-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold font-bold shrink-0">
+                                                            {index + 1}
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-white font-bold text-lg">{module.title}</h4>
+                                                            <p className="text-gray-500 text-sm">{module.duration || "Video Eğitimi"}</p>
+                                                        </div>
+                                                    </div>
+                                                    <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
                                 </motion.div>
                             )}
 
@@ -228,8 +253,8 @@ export function CourseDetail() {
                                     <span>12 Adet Ek Ek Kaynak / PDF</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-400">
-                                    <Shield className="w-5 h-5 text-brand-gold" />
-                                    <span>Resmi Bitirme Sertifikası</span>
+                                    <CheckCircle2 className="w-5 h-5 text-brand-gold" />
+                                    <span>İnteraktif Modül Sınavları</span>
                                 </div>
                             </div>
                         </div>
