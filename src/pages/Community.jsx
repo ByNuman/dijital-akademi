@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+
 import { MessageSquare, ThumbsUp, MessageCircle, Eye, HandHeart, Plus, Search, Tag, Filter } from "lucide-react";
 import { Button } from "../components/ui/Button";
 
@@ -52,14 +52,11 @@ export function Community() {
                 {/* Header Graphic */}
                 <div className="text-center mb-12 relative pb-10">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 bg-brand-gold/10 blur-[80px] rounded-full pointer-events-none"></div>
-                    <motion.div
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", bounce: 0.5 }}
+                    <div
                         className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#1A1A1A] to-[#111] border border-brand-gold/30 rounded-2xl mb-6 shadow-[0_0_30px_rgba(251,191,36,0.15)] relative z-10"
                     >
                         <MessageSquare className="w-10 h-10 text-brand-gold" />
-                    </motion.div>
+                    </div>
                     <h1 className="text-4xl md:text-5xl font-black text-white mb-4 relative z-10">Akademi Topluluğu</h1>
                     <p className="text-gray-400 text-lg max-w-2xl mx-auto relative z-10">Öğrenciler ve eğitmenlerle fikirlerinizi paylaşın, sorular sorun ve akademi ağınızı büyütün.</p>
                 </div>
@@ -132,10 +129,7 @@ export function Community() {
                         {/* Discussions List */}
                         <div className="space-y-4">
                             {mockDiscussions.map((disc, index) => (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.1 }}
+                                <div
                                     key={disc.id}
                                     className="bg-[#1A1A1A] border border-white/5 hover:border-brand-gold/30 rounded-2xl p-6 transition-all duration-300 cursor-pointer group shadow-sm hover:shadow-[0_0_20px_rgba(251,191,36,0.05)]"
                                 >
@@ -188,7 +182,7 @@ export function Community() {
                                             </div>
                                         </div>
                                     </div>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
 

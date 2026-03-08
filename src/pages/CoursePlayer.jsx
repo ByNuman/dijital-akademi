@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+
 import {
     PlayCircle, CheckCircle2, ChevronLeft, ChevronRight,
     FileText, HelpCircle, MessageCircle, Menu, X, ArrowLeft,
@@ -11,6 +11,9 @@ import { toast } from "sonner";
 import { useLibrary } from "../context/LibraryContext";
 import { Quiz } from "../components/player/Quiz";
 import { useCourses } from "../context/CoursesContext";
+import { PDFViewer } from "../components/player/PDFViewer";
+import { SlideViewer } from "../components/player/SlideViewer";
+import { AudioPlayer } from "../components/player/AudioPlayer";
 
 export function CoursePlayer() {
     const { id } = useParams();
@@ -25,6 +28,9 @@ export function CoursePlayer() {
     const [activeLesson, setActiveLesson] = useState(1);
     const [activeTab, setActiveTab] = useState("genel_bakis"); // genel_bakis, materyaller, tartisma
     const [isQuizActive, setIsQuizActive] = useState(false);
+    const [activePdfUrl, setActivePdfUrl] = useState(null);
+    const [activeSlideUrl, setActiveSlideUrl] = useState(null);
+    const [activeAudioUrl, setActiveAudioUrl] = useState(null);
 
     // Change Curriculum to State for interactivity
     const [curriculum, setCurriculum] = useState([]);
@@ -39,7 +45,7 @@ export function CoursePlayer() {
                         id: idx + 1,
                         title: m.title,
                         imageUrl: m.imageUrl,
-                        testUrl: m.testUrl,
+                        questions: m.questions || [],
                         description: m.description,
                         pdfUrl: m.pdfUrl,
                         slideUrl: m.slideUrl,
@@ -138,12 +144,10 @@ export function CoursePlayer() {
                     <div className="hidden md:flex items-center gap-3 mr-4">
                         <span className="text-xs font-semibold text-gray-400">İlerleme %{progressPercentage}</span>
                         <div className="w-32 h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progressPercentage}%` }}
-                                transition={{ duration: 0.5, ease: "easeOut" }}
-                                className="h-full bg-gradient-to-r from-brand-gold to-brand-gold-dark rounded-full"
-                            ></motion.div>
+                            <div
+                                style={{ width: `${progressPercentage}%` }}
+                                className="h-full bg-gradient-to-r from-brand-gold to-brand-gold-dark rounded-full transition-all duration-500 ease-out"
+                            ></div>
                         </div>
                     </div>
                 </div>
@@ -153,13 +157,9 @@ export function CoursePlayer() {
             <div className="flex-1 flex overflow-hidden relative">
 
                 {/* Left Sidebar (Curriculum) */}
-                <AnimatePresence>
+                <>
                     {isSidebarOpen && (
-                        <motion.div
-                            initial={{ x: -320, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -320, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
+                        <div
                             className="w-full sm:w-80 md:w-96 bg-[#18181B] border-r border-white/5 flex flex-col absolute lg:relative h-full z-10"
                         >
                             <div className="p-5 border-b border-white/5 text-center sm:text-left">
@@ -208,9 +208,9 @@ export function CoursePlayer() {
                                     </div>
                                 ))}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
-                </AnimatePresence>
+                </>
 
                 {/* Right Content Area */}
                 <div className="flex-1 flex flex-col bg-[#101010] overflow-y-auto relative h-full">
@@ -250,6 +250,7 @@ export function CoursePlayer() {
                                 <Quiz
                                     onComplete={() => setIsQuizActive(false)}
                                     onQuit={() => setIsQuizActive(false)}
+                                    questions={currentLessonData?.questions}
                                 />
                             </div>
                         ) : (
@@ -285,7 +286,7 @@ export function CoursePlayer() {
                                             <tab.icon className="w-5 h-5" />
                                             <span>{tab.label}</span>
                                             {activeTab === tab.id && (
-                                                <motion.div layoutId="playerTab" className="absolute bottom-0 left-0 right-0 h-1 bg-brand-gold rounded-t-lg" />
+                                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-gold rounded-t-lg" />
                                             )}
                                         </button>
                                     ))}
@@ -294,7 +295,7 @@ export function CoursePlayer() {
                                 {/* Tab Contents */}
                                 <div className="text-gray-300 font-light leading-relaxed flex-1">
                                     {activeTab === "genel_bakis" && (
-                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 sm:p-10 shadow-xl">
+                                        <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 sm:p-10 shadow-xl">
                                             <h4 className="text-2xl font-black text-white mb-4">Konu Hakkında</h4>
                                             <p className="mb-6 text-gray-400 text-lg leading-relaxed whitespace-pre-wrap">
                                                 {currentLessonData?.description || `Bu derste, ${currentLessonData?.title} konusunun akademik temellerini atacağız. Kaynakların metodolojik incelemesi ve yazarın dönemsel etkileri merkeze alınacaktır. Bu konuyu kendi hızınızda tamamlamak için çoklu format destekleyen Materyaller sekmemizi kullanabilirsiniz.`}
@@ -305,23 +306,23 @@ export function CoursePlayer() {
                                                     Öncelikle <strong>"Materyaller (4'lü Set)"</strong> sekmesine giderek "Sesli Özet" veya "PDF Okuma" modüllerinden biriyle konuya giriş yapın. Ardından sunumu inceleyin ve son olarak "Modül Testi" ile bilginizi sınayarak doğrudan sonraki konuya geçiş yapın.
                                                 </p>
                                             </div>
-                                        </motion.div>
+                                        </div>
                                     )}
 
                                     {activeTab === "materyaller" && (
-                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             {/* Dinamik Materyaller */}
                                             {currentLessonData?.pdfUrl && (
                                                 <div 
-                                                    onClick={() => window.open(currentLessonData.pdfUrl, "_blank")}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-brand-gold/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
+                                                    onClick={() => setActivePdfUrl(currentLessonData.pdfUrl)}
+                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-red-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
                                                 >
                                                     <div className="flex items-center gap-5">
-                                                        <div className="bg-brand-gold/10 p-4 rounded-2xl group-hover:bg-brand-gold/20 transition-colors">
-                                                            <FileText className="w-8 h-8 text-brand-gold" />
+                                                        <div className="bg-red-500/10 p-4 rounded-2xl group-hover:bg-red-500/20 transition-colors">
+                                                            <FileText className="w-8 h-8 text-red-400" />
                                                         </div>
                                                         <div>
-                                                            <div className="text-white font-black text-xl group-hover:text-brand-gold transition-colors">PDF Okuma</div>
+                                                            <div className="text-white font-black text-xl group-hover:text-red-400 transition-colors">PDF Okuma</div>
                                                             <div className="text-sm font-medium text-gray-500 mt-1">Detaylı Ders Notları</div>
                                                         </div>
                                                     </div>
@@ -331,16 +332,16 @@ export function CoursePlayer() {
 
                                             {currentLessonData?.slideUrl && (
                                                 <div 
-                                                    onClick={() => window.open(currentLessonData.slideUrl, "_blank")}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-brand-gold/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
+                                                    onClick={() => setActiveSlideUrl(currentLessonData.slideUrl)}
+                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-blue-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
                                                 >
                                                     <div className="flex items-center gap-5">
-                                                        <div className="bg-brand-gold/10 p-4 rounded-2xl group-hover:bg-brand-gold/20 transition-colors">
-                                                            <Monitor className="w-8 h-8 text-brand-gold" />
+                                                        <div className="bg-blue-500/10 p-4 rounded-2xl group-hover:bg-blue-500/20 transition-colors">
+                                                            <Monitor className="w-8 h-8 text-blue-400" />
                                                         </div>
                                                         <div>
-                                                            <div className="text-white font-black text-xl group-hover:text-brand-gold transition-colors">Slayt</div>
-                                                            <div className="text-sm font-medium text-gray-500 mt-1">Görsel Sunum</div>
+                                                            <div className="text-white font-black text-xl group-hover:text-blue-400 transition-colors">Slayt</div>
+                                                            <div className="text-sm font-medium text-gray-500 mt-1">Görsel Sunum (PDF)</div>
                                                         </div>
                                                     </div>
                                                     <Button variant="outline" className="font-bold">İncele</Button>
@@ -349,15 +350,15 @@ export function CoursePlayer() {
 
                                             {currentLessonData?.audioUrl && (
                                                 <div 
-                                                    onClick={() => window.open(currentLessonData.audioUrl, "_blank")}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-brand-gold/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
+                                                    onClick={() => setActiveAudioUrl(currentLessonData.audioUrl)}
+                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-purple-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
                                                 >
                                                     <div className="flex items-center gap-5">
-                                                        <div className="bg-brand-gold/10 p-4 rounded-2xl group-hover:bg-brand-gold/20 transition-colors">
-                                                            <Headphones className="w-8 h-8 text-brand-gold" />
+                                                        <div className="bg-purple-500/10 p-4 rounded-2xl group-hover:bg-purple-500/20 transition-colors">
+                                                            <Headphones className="w-8 h-8 text-purple-400" />
                                                         </div>
                                                         <div>
-                                                            <div className="text-white font-black text-xl group-hover:text-brand-gold transition-colors">Sesli Özet</div>
+                                                            <div className="text-white font-black text-xl group-hover:text-purple-400 transition-colors">Sesli Özet</div>
                                                             <div className="text-sm font-medium text-gray-500 mt-1">Dinleyerek Öğrenin (mp3)</div>
                                                         </div>
                                                     </div>
@@ -372,51 +373,37 @@ export function CoursePlayer() {
                                                 </div>
                                             )}
 
-                                            {currentLessonData?.testUrl ? (
-                                                <div
-                                                    onClick={() => window.open(currentLessonData.testUrl, "_blank")}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1C] border-2 border-brand-gold/20 rounded-3xl hover:border-brand-gold transition-all cursor-pointer group hover:-translate-y-1 shadow-[0_0_30px_rgba(251,191,36,0.05)] relative overflow-hidden md:col-span-2 xl:col-span-1"
-                                                >
-                                                    <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/5 flex-transparent pointer-events-none"></div>
-                                                    <div className="flex items-center gap-5 relative z-10">
-                                                        <div className="bg-brand-gold p-4 rounded-2xl text-brand-black group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(251,191,36,0.3)]">
-                                                            <CheckSquare className="w-8 h-8" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-white font-black text-xl transition-colors">Dış Bağlantılı Test</div>
-                                                            <div className="text-sm font-bold text-brand-gold/80 mt-1">Harici Platformda Çöz</div>
+                                            <div
+                                                onClick={() => setIsQuizActive(true)}
+                                                className="flex items-center justify-between p-6 bg-[#1A1A1C] border-2 border-brand-gold/20 rounded-3xl hover:border-brand-gold transition-all cursor-pointer group hover:-translate-y-1 shadow-[0_0_30px_rgba(251,191,36,0.05)] relative overflow-hidden md:col-span-2 xl:col-span-1"
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/5 flex-transparent pointer-events-none"></div>
+                                                <div className="flex items-center gap-5 relative z-10">
+                                                    <div className="bg-brand-gold p-4 rounded-2xl text-brand-black group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                                                        <CheckSquare className="w-8 h-8" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-white font-black text-xl transition-colors">Modül Testi</div>
+                                                        <div className="text-sm font-bold text-brand-gold/80 mt-1">
+                                                            {(currentLessonData?.questions && currentLessonData.questions.length > 0)
+                                                                ? `${currentLessonData.questions.length} Soru`
+                                                                : 'Bilginizi Sınayın'
+                                                            }
                                                         </div>
                                                     </div>
-                                                    <Button variant="primary" className="relative z-10 font-bold px-6 shadow-[0_0_15px_rgba(251,191,36,0.4)]">Testi Aç</Button>
                                                 </div>
-                                            ) : (
-                                                <div
-                                                    onClick={() => setIsQuizActive(true)}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1C] border-2 border-brand-gold/20 rounded-3xl hover:border-brand-gold transition-all cursor-pointer group hover:-translate-y-1 shadow-[0_0_30px_rgba(251,191,36,0.05)] relative overflow-hidden md:col-span-2 xl:col-span-1"
-                                                >
-                                                    <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/5 flex-transparent pointer-events-none"></div>
-                                                    <div className="flex items-center gap-5 relative z-10">
-                                                        <div className="bg-brand-gold p-4 rounded-2xl text-brand-black group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(251,191,36,0.3)]">
-                                                            <CheckSquare className="w-8 h-8" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-white font-black text-xl transition-colors">Modül Testi</div>
-                                                            <div className="text-sm font-bold text-brand-gold/80 mt-1">Bilginizi Sınayın</div>
-                                                        </div>
-                                                    </div>
-                                                    <Button variant="primary" className="relative z-10 font-bold px-6 shadow-[0_0_15px_rgba(251,191,36,0.4)]">Çöz</Button>
-                                                </div>
-                                            )}
-                                        </motion.div>
+                                                <Button variant="primary" className="relative z-10 font-bold px-6 shadow-[0_0_15px_rgba(251,191,36,0.4)]">Çöz</Button>
+                                            </div>
+                                        </div>
                                     )}
 
                                     {activeTab === "tartisma" && (
-                                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20 bg-[#1A1A1A] border border-white/5 rounded-3xl shadow-xl">
+                                        <div className="text-center py-20 bg-[#1A1A1A] border border-white/5 rounded-3xl shadow-xl">
                                             <MessageCircle className="w-20 h-20 text-gray-600 mx-auto mb-6" />
                                             <h3 className="text-2xl font-black text-white mb-3">Tartışma Alanı</h3>
                                             <p className="text-gray-400 text-lg max-w-md mx-auto mb-8">Soru sormak, yanıtları okumak ve diğer akademik öğrencilerle etkileşime geçmek için lütfen giriş yapın veya kayıt olun.</p>
                                             <Button variant="primary" className="px-8 py-3 text-lg font-bold">Giriş Yap / Kayıt Ol</Button>
-                                        </motion.div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -425,6 +412,29 @@ export function CoursePlayer() {
                 </div>
 
             </div>
+
+            {/* Material Viewer Modals */}
+            {activePdfUrl && (
+                <PDFViewer
+                    url={activePdfUrl}
+                    onClose={() => setActivePdfUrl(null)}
+                    title={`${currentLessonData?.title || ''} - PDF`}
+                />
+            )}
+            {activeSlideUrl && (
+                <SlideViewer
+                    url={activeSlideUrl}
+                    onClose={() => setActiveSlideUrl(null)}
+                    title={`${currentLessonData?.title || ''} - Slayt`}
+                />
+            )}
+            {activeAudioUrl && (
+                <AudioPlayer
+                    url={activeAudioUrl}
+                    onClose={() => setActiveAudioUrl(null)}
+                    title={`${currentLessonData?.title || ''} - Sesli Özet`}
+                />
+            )}
         </div>
     );
 }

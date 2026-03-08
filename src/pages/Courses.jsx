@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { Search, Filter, Star, Users, Clock, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
@@ -30,13 +30,11 @@ export function Courses() {
             <div className="container mx-auto px-6 md:px-12 mb-12">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div>
-                        <motion.h1
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
+                        <h1
                             className="text-4xl md:text-5xl font-black text-white mb-4"
                         >
                             Ders <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-gold-dark">Kataloğu</span>
-                        </motion.h1>
+                        </h1>
                         <p className="text-gray-400">Akademik gelişiminiz için özenle hazırlanmış dersleri keşfedin.</p>
                     </div>
 
@@ -82,19 +80,13 @@ export function Courses() {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-gold"></div>
                     </div>
                 ) : (
-                <AnimatePresence mode="popLayout">
+                <>
                     {filteredCourses.length > 0 ? (
-                        <motion.div
-                            layout
+                        <div
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
                         >
                             {filteredCourses.map((course) => (
-                                <motion.div
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
-                                    transition={{ duration: 0.3 }}
+                                <div
                                     key={course.id}
                                     className="bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden group hover:border-brand-gold/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(251,191,36,0.1)] flex flex-col h-full"
                                 >
@@ -143,13 +135,11 @@ export function Courses() {
                                             </Button>
                                         </Link>
                                     </div>
-                                </motion.div>
+                                </div>
                             ))}
-                        </motion.div>
+                        </div>
                     ) : (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                        <div
                             className="col-span-full py-20 text-center"
                         >
                             <div className="inline-flex w-20 h-20 bg-white/5 rounded-full items-center justify-center mb-6 border border-white/10">
@@ -166,9 +156,9 @@ export function Courses() {
                             >
                                 Filtreleri Temizle
                             </Button>
-                        </motion.div>
+                        </div>
                     )}
-                </AnimatePresence>
+                </>
                 )}
             </div>
         </div>

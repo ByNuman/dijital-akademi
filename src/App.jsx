@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { MainLayout } from './components/layout/MainLayout';
 import { PrivateRoute } from './components/auth/PrivateRoute';
@@ -26,69 +25,39 @@ const PageLoader = () => (
   </div>
 );
 
-// Sayfa geçiş animasyonu ayarları
-const pageVariants = {
-  initial: { opacity: 0, y: 10 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
-  exit: { opacity: 0, scale: 0.98, transition: { duration: 0.3, ease: "easeIn" } }
-};
-
-// Animasyon sarmalayıcı bileşeni
-const PageWrapper = ({ children }) => (
-  <motion.div
-    variants={pageVariants}
-    initial="initial"
-    animate="animate"
-    exit="exit"
-    className="w-full h-full"
-  >
-    {children}
-  </motion.div>
-);
-
-function AnimatedRoutes() {
-  const location = useLocation();
-
+function App() {
   return (
-    <AnimatePresence mode="wait">
+    <Router>
       <Suspense fallback={<PageLoader />}>
-        <Routes location={location} key={location.pathname}>
+        <Routes>
           <Route element={<MainLayout />}>
-            <Route path="/" element={<PageWrapper><HomePage /></PageWrapper>} />
-            <Route path="/courses" element={<PageWrapper><Courses /></PageWrapper>} />
-            <Route path="/course/:id" element={<PageWrapper><CourseDetail /></PageWrapper>} />
-            <Route path="/community" element={<PageWrapper><Community /></PageWrapper>} />
-            <Route path="/blog" element={<PageWrapper><Blog /></PageWrapper>} />
-            <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-            <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/course/:id" element={<CourseDetail />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
             {/* Protected Routes inside MainLayout */}
             <Route element={<PrivateRoute />}>
-              <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              <Route path="/profile" element={<PageWrapper><Profile /></PageWrapper>} />
-              <Route path="/leaderboard" element={<PageWrapper><Leaderboard /></PageWrapper>} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </Route>
 
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Route>
           </Route>
 
           {/* Course Player Layout'suz/Özel Layout ile olacak (Sidebar için) - Sadece giriş yapanlara */}
           <Route element={<PrivateRoute />}>
-            <Route path="/learn/:id" element={<PageWrapper><CoursePlayer /></PageWrapper>} />
+            <Route path="/learn/:id" element={<CoursePlayer />} />
           </Route>
         </Routes>
       </Suspense>
-    </AnimatePresence>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <AnimatedRoutes />
       <Toaster position="bottom-right" />
     </Router>
   )

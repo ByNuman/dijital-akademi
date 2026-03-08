@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
 import { User, Mail, Lock, Bell, Shield, LogOut, CheckCircle2, ChevronRight, Camera } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { studentData } from "../data/studentData";
@@ -65,13 +65,9 @@ export function Profile() {
 
                     {/* Content Area */}
                     <div className="flex-1">
-                        <AnimatePresence mode="wait">
+                        <>
                             {activeTab === "genel" && (
-                                <motion.div
-                                    key="genel"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
+                                <div
                                     className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8"
                                 >
                                     <h2 className="text-2xl font-bold text-white mb-8">Genel Profil Bilgileri</h2>
@@ -141,15 +137,11 @@ export function Profile() {
                                             </Button>
                                         </div>
                                     </form>
-                                </motion.div>
+                                </div>
                             )}
 
                             {activeTab === "guvenlik" && (
-                                <motion.div
-                                    key="guvenlik"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
+                                <div
                                     className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8"
                                 >
                                     <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
@@ -187,15 +179,11 @@ export function Profile() {
                                             <Button type="submit" variant="primary">Şifreyi Güncelle</Button>
                                         </div>
                                     </form>
-                                </motion.div>
+                                </div>
                             )}
 
                             {(activeTab === "bildirimler" || activeTab === "gizlilik") && (
-                                <motion.div
-                                    key="diger"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
+                                <div
                                     className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8"
                                 >
                                     <div className="flex flex-col items-center justify-center text-center py-12">
@@ -205,9 +193,9 @@ export function Profile() {
                                         <h3 className="text-xl font-bold text-white mb-2">Yakında Eklenecek</h3>
                                         <p className="text-gray-400 max-w-sm">Bu bölümdeki geliştirmeler devam etmektedir. Profil sayfası Faz 3 güncellemeleri kapsamında geliştiriliyor.</p>
                                     </div>
-                                </motion.div>
+                                </div>
                             )}
-                        </AnimatePresence>
+                        </>
                     </div>
                 </div>
             </div>

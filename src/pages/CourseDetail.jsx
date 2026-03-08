@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+
 import { Play, FileText, CheckCircle2, ChevronRight, Star, Clock, Users, BookOpen } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { useLibrary } from "../context/LibraryContext";
@@ -116,7 +116,7 @@ export function CourseDetail() {
                                 >
                                     {tab === "mufredat" ? "Müfredat" : tab === "aciklama" ? "Ders Tanıtımı" : "Eğitmen"}
                                     {activeTab === tab && (
-                                        <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-1 bg-brand-gold rounded-t-lg" />
+                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-gold rounded-t-lg" />
                                     )}
                                 </button>
                             ))}
@@ -143,7 +143,7 @@ export function CourseDetail() {
                         {/* Switchable Content Area */}
                         <div>
                             {activeTab === "mufredat" && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                                <div className="space-y-4">
                                     <h3 className="text-2xl font-bold text-white mb-6">Ders Müfredatı</h3>
                                     <div className="text-gray-400 mb-4 flex gap-4">
                                         <span>{modules.length} Konu</span>
@@ -172,19 +172,19 @@ export function CourseDetail() {
                                             </div>
                                         ))
                                     )}
-                                </motion.div>
+                                </div>
                             )}
 
                             {activeTab === "aciklama" && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-gray-300 leading-loose space-y-6">
+                                <div className="text-gray-300 leading-loose space-y-6">
                                     <h3 className="text-2xl font-bold text-white mb-4">Detaylı Tanıtım</h3>
                                     <p>Bu eğitim programı, alanı daha önce araştırma fırsatı bulamamış başlangıç düzeyindeki öğrenciler kadar, bilgilerini pekiştirmek isteyen ileri seviyedeki araştırmacılar için de uygundur.</p>
                                     <p>Ders içerisinde sunulan tüm klasik kaynak analizleri ve yan materyaller (PDF'ler, sunum notları) interaktif bir şekilde Dijital Akademi panelinde sizlere sunulacaktır.</p>
-                                </motion.div>
+                                </div>
                             )}
 
                             {activeTab === "egitmen" && (
-                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-gray-300 leading-loose space-y-6">
+                                <div className="text-gray-300 leading-loose space-y-6">
                                     <h3 className="text-2xl font-bold text-white mb-4">Eğitmen Hakkında</h3>
                                     <div className="flex items-start gap-6 border-b border-white/10 pb-6 mb-6">
                                         <img src={`https://ui-avatars.com/api/?name=${course.instructor.split(" ")[1]}&background=FBBF24&color=000&size=120`} alt={course.instructor} className="w-24 h-24 rounded-2xl" />
@@ -198,7 +198,7 @@ export function CourseDetail() {
                                         </div>
                                     </div>
                                     <p>Yılların verdiği akademik deneyimi dijital ortama taşıyan eğitmenimiz, konuları en anlaşılır ve kalıcı haliyle öğrencilerine aktarmayı hedeflemektedir.</p>
-                                </motion.div>
+                                </div>
                             )}
                         </div>
                     </div>

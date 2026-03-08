@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sparkles, Bell, User, BookOpen, Award, Settings, LogOut, Trophy, ShieldAlert } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
@@ -57,11 +56,8 @@ export function Navbar() {
     ];
 
     return (
-        <motion.nav
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
+        <nav
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
                 ? "bg-[#101010]/80 backdrop-blur-xl border-b border-white/5 py-4 shadow-2xl"
                 : "bg-transparent py-6"
                 }`}
@@ -107,44 +103,38 @@ export function Navbar() {
                                     </div>
                                 </button>
 
-                                <AnimatePresence>
-                                    {isProfileOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="absolute right-0 top-full mt-3 w-64 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl py-2 overflow-hidden"
-                                        >
-                                            <div className="px-4 py-3 border-b border-white/5 mb-2">
-                                                <div className="text-white font-bold">{userData?.name || "Kullanıcı"}</div>
-                                                <div className="text-sm text-brand-gold">{userData?.role === 'admin' ? 'Yönetici' : 'Öğrenci Hesabı'}</div>
-                                            </div>
+                                {isProfileOpen && (
+                                    <div
+                                        className="absolute right-0 top-full mt-3 w-64 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl py-2 overflow-hidden"
+                                    >
+                                        <div className="px-4 py-3 border-b border-white/5 mb-2">
+                                            <div className="text-white font-bold">{userData?.name || "Kullanıcı"}</div>
+                                            <div className="text-sm text-brand-gold">{userData?.role === 'admin' ? 'Yönetici' : 'Öğrenci Hesabı'}</div>
+                                        </div>
 
-                                            {profileLinks.map((link) => {
-                                                const Icon = link.icon;
-                                                return (
-                                                    <Link
-                                                        key={link.name}
-                                                        to={link.href}
-                                                        onClick={() => setIsProfileOpen(false)}
-                                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-brand-gold hover:bg-white/5 transition-colors"
-                                                    >
-                                                        <Icon className="w-4 h-4" />
-                                                        {link.name}
-                                                    </Link>
-                                                );
-                                            })}
+                                        {profileLinks.map((link) => {
+                                            const Icon = link.icon;
+                                            return (
+                                                <Link
+                                                    key={link.name}
+                                                    to={link.href}
+                                                    onClick={() => setIsProfileOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-brand-gold hover:bg-white/5 transition-colors"
+                                                >
+                                                    <Icon className="w-4 h-4" />
+                                                    {link.name}
+                                                </Link>
+                                            );
+                                        })}
 
-                                            <div className="border-t border-white/5 mt-2 pt-2">
-                                                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
-                                                    <LogOut className="w-4 h-4" />
-                                                    Oturumu Kapat
-                                                </button>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                                        <div className="border-t border-white/5 mt-2 pt-2">
+                                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
+                                                <LogOut className="w-4 h-4" />
+                                                Oturumu Kapat
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </>
                     ) : (
@@ -167,81 +157,76 @@ export function Navbar() {
             </div>
 
             {/* Mobile Menu Dropdown */}
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0, borderTopColor: "transparent" }}
-                        animate={{ opacity: 1, height: 'auto', borderTopColor: "rgba(255,255,255,0.05)" }}
-                        exit={{ opacity: 0, height: 0, borderTopColor: "transparent" }}
-                        className="md:hidden bg-[#101010]/95 backdrop-blur-xl border-b border-white/5 border-t absolute top-full left-0 right-0 overflow-hidden shadow-2xl"
-                    >
-                        <div className="py-6 px-6 flex flex-col gap-2">
-                            {/* Mobile User Info */}
-                            {currentUser ? (
-                                <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/5">
-                                    <div className="w-12 h-12 rounded-full border border-brand-gold/50 p-0.5 overflow-hidden">
-                                        <img src={studentData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="text-white font-bold text-lg">{userData?.name || "Kullanıcı"}</div>
-                                        <div className="text-brand-gold text-sm">{userData?.role === 'admin' ? 'Yönetici' : 'Öğrenci Hesabı'}</div>
-                                    </div>
-                                    <button className="p-2 text-gray-400 hover:text-white relative">
-                                        <Bell className="w-5 h-5" />
-                                        <span className="absolute top-2 right-2 w-2 h-2 bg-brand-gold rounded-full"></span>
-                                    </button>
+            {isMobileMenuOpen && (
+                <div
+                    className="md:hidden bg-[#101010]/95 backdrop-blur-xl border-b border-white/5 border-t border-t-white/5 absolute top-full left-0 right-0 overflow-hidden shadow-2xl"
+                >
+                    <div className="py-6 px-6 flex flex-col gap-2">
+                        {/* Mobile User Info */}
+                        {currentUser ? (
+                            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/5">
+                                <div className="w-12 h-12 rounded-full border border-brand-gold/50 p-0.5 overflow-hidden">
+                                    <img src={studentData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
                                 </div>
-                            ) : (
-                                <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-white/5">
-                                    <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                                        <Button variant="outline" className="w-full justify-center">Giriş Yap</Button>
-                                    </Link>
-                                    <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                                        <Button variant="primary" className="w-full justify-center text-sm py-2">Kayıt Ol</Button>
-                                    </Link>
+                                <div className="flex-1">
+                                    <div className="text-white font-bold text-lg">{userData?.name || "Kullanıcı"}</div>
+                                    <div className="text-brand-gold text-sm">{userData?.role === 'admin' ? 'Yönetici' : 'Öğrenci Hesabı'}</div>
                                 </div>
-                            )}
-
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.name}
-                                    to={link.href}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="text-lg font-medium py-3 text-gray-300 hover:text-white"
-                                >
-                                    {link.name}
+                                <button className="p-2 text-gray-400 hover:text-white relative">
+                                    <Bell className="w-5 h-5" />
+                                    <span className="absolute top-2 right-2 w-2 h-2 bg-brand-gold rounded-full"></span>
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-white/5">
+                                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <Button variant="outline" className="w-full justify-center">Giriş Yap</Button>
                                 </Link>
-                            ))}
+                                <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                                    <Button variant="primary" className="w-full justify-center text-sm py-2">Kayıt Ol</Button>
+                                </Link>
+                            </div>
+                        )}
 
-                            {currentUser && (
-                                <>
-                                    <div className="h-px bg-white/5 my-2"></div>
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.href}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="text-lg font-medium py-3 text-gray-300 hover:text-white"
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
 
-                                    {profileLinks.map((link) => {
-                                        const Icon = link.icon;
-                                        return (
-                                            <Link
-                                                key={link.name}
-                                                to={link.href}
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                                className="text-lg flex items-center gap-3 font-medium py-3 text-gray-400 hover:text-white"
-                                            >
-                                                <Icon className="w-5 h-5" />
-                                                {link.name}
-                                            </Link>
-                                        );
-                                    })}
+                        {currentUser && (
+                            <>
+                                <div className="h-px bg-white/5 my-2"></div>
 
-                                    <button onClick={handleLogout} className="text-lg flex items-center gap-3 font-medium py-3 text-red-500 hover:text-red-400 mt-2 w-full text-left">
-                                        <LogOut className="w-5 h-5" />
-                                        Oturumu Kapat
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.nav>
+                                {profileLinks.map((link) => {
+                                    const Icon = link.icon;
+                                    return (
+                                        <Link
+                                            key={link.name}
+                                            to={link.href}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="text-lg flex items-center gap-3 font-medium py-3 text-gray-400 hover:text-white"
+                                        >
+                                            <Icon className="w-5 h-5" />
+                                            {link.name}
+                                        </Link>
+                                    );
+                                })}
+
+                                <button onClick={handleLogout} className="text-lg flex items-center gap-3 font-medium py-3 text-red-500 hover:text-red-400 mt-2 w-full text-left">
+                                    <LogOut className="w-5 h-5" />
+                                    Oturumu Kapat
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+        </nav>
     );
 }

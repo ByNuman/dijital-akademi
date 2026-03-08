@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, XCircle, Trophy, ArrowRight, RotateCcw } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Button } from "../ui/Button";
 import { useLibrary } from "../../context/LibraryContext";
 
-const questions = [
+const defaultQuestions = [
     {
         id: 1,
-        question: "İslam düşünce tarihinde 'Kelam' ilminin temel amacı aşağıdakilerden hangisidir?",
+        text: "İslam düşünce tarihinde 'Kelam' ilminin temel amacı aşağıdakilerden hangisidir?",
         options: [
             "Kur'an ayetlerinin iniş sebeplerini (Esbab-ı Nüzul) incelemek",
             "İslam inanç esaslarını akli ve nakli delillerle savunmak",
@@ -19,7 +18,7 @@ const questions = [
     },
     {
         id: 2,
-        question: "Fıkıh terminolojisinde, yapılması kesin ve bağlayıcı olarak istenen dini emirlere ne ad verilir?",
+        text: "Fıkıh terminolojisinde, yapılması kesin ve bağlayıcı olarak istenen dini emirlere ne ad verilir?",
         options: [
             "Mendup",
             "Mübah",
@@ -30,7 +29,7 @@ const questions = [
     },
     {
         id: 3,
-        question: "Aşağıdakilerden hangisi hadis usulünde 'kabul edilebilir (sahih)' bir hadisin taşıması gereken özelliklerden biri DEĞİLDİR?",
+        text: "Aşağıdakilerden hangisi hadis usulünde 'kabul edilebilir (sahih)' bir hadisin taşıması gereken özelliklerden biri DEĞİLDİR?",
         options: [
             "Ravilerin adalet sahibi (güvenilir) olması",
             "Ravilerin zapt sahibi (hafızası güçlü) olması",
@@ -41,7 +40,11 @@ const questions = [
     }
 ];
 
-export function Quiz({ onComplete, onQuit }) {
+export function Quiz({ onComplete, onQuit, questions: propQuestions }) {
+    // Admin panelinden gelen sorular varsa onları kullan, yoksa varsayılan soruları
+    const questions = (propQuestions && propQuestions.length > 0)
+        ? propQuestions.map((q, i) => ({ id: i + 1, text: q.text, options: q.options, correctAnswer: q.correctAnswer }))
+        : defaultQuestions;
     const [currentQIndex, setCurrentQIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null);
     const [isAnswered, setIsAnswered] = useState(false);
@@ -125,23 +128,18 @@ export function Quiz({ onComplete, onQuit }) {
         const isSuccess = finalScore >= total / 2;
 
         return (
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+            <div
                 className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 sm:p-12 text-center max-w-2xl mx-auto shadow-2xl relative overflow-hidden"
             >
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-gold/5 flex-transparent pointer-events-none"></div>
 
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
+                <div
                     className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 relative z-10
                         ${isSuccess ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-500'}
                     `}
                 >
                     <Trophy className="w-12 h-12" />
-                </motion.div>
+                </div>
 
                 <h2 className="text-3xl font-black text-white mb-2 relative z-10">
                     {isSuccess ? 'Tebrikler, Harika İş Çıkardınız!' : 'Biraz Daha Çalışmalısınız'}
@@ -164,7 +162,7 @@ export function Quiz({ onComplete, onQuit }) {
                         <CheckCircle2 className="w-4 h-4" /> Eğitime Geri Dön
                     </Button>
                 </div>
-            </motion.div>
+            </div>
         );
     }
 
@@ -183,65 +181,55 @@ export function Quiz({ onComplete, onQuit }) {
             </div>
 
             <div className="w-full bg-[#1A1A1A] h-2 rounded-full mb-8 overflow-hidden">
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
-                    className="h-full bg-brand-gold rounded-full"
+                <div
+                    className="h-full bg-brand-gold rounded-full transition-all duration-300"
+                    style={{ width: `${((currentQIndex) / questions.length) * 100}%` }}
                 />
             </div>
 
             {/* Question Card */}
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={currentQ.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-6 sm:p-10 shadow-xl"
-                >
-                    <h4 className="text-xl sm:text-2xl font-bold text-white mb-8 leading-snug">
-                        {currentQ.question}
-                    </h4>
+            <div
+                className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-6 sm:p-10 shadow-xl"
+            >
+                <h4 className="text-xl sm:text-2xl font-bold text-white mb-8 leading-snug">
+                    {currentQ.text}
+                </h4>
 
-                    <div className="space-y-4">
-                        {currentQ.options.map((option, index) => {
-                            let optionClass = "bg-[#252525] border-white/10 text-gray-300 hover:border-brand-gold/50 hover:bg-[#2a2a2a]";
-                            let Icon = null;
+                <div className="space-y-4">
+                    {currentQ.options.map((option, index) => {
+                        let optionClass = "bg-[#252525] border-white/10 text-gray-300 hover:border-brand-gold/50 hover:bg-[#2a2a2a]";
+                        let Icon = null;
 
-                            if (isAnswered) {
-                                if (index === currentQ.correctAnswer) {
-                                    optionClass = "bg-emerald-500/10 border-emerald-500/50 text-emerald-400";
-                                    Icon = CheckCircle2;
-                                } else if (index === selectedOption) {
-                                    optionClass = "bg-red-500/10 border-red-500/50 text-red-400";
-                                    Icon = XCircle;
-                                } else {
-                                    optionClass = "bg-[#252525] border-white/5 text-gray-500 opacity-50";
-                                }
-                            } else if (selectedOption === index) {
-                                optionClass = "bg-brand-gold/10 border-brand-gold text-white"; // While clicking before verification (rarely seen due to instant feedback)
+                        if (isAnswered) {
+                            if (index === currentQ.correctAnswer) {
+                                optionClass = "bg-emerald-500/10 border-emerald-500/50 text-emerald-400";
+                                Icon = CheckCircle2;
+                            } else if (index === selectedOption) {
+                                optionClass = "bg-red-500/10 border-red-500/50 text-red-400";
+                                Icon = XCircle;
+                            } else {
+                                optionClass = "bg-[#252525] border-white/5 text-gray-500 opacity-50";
                             }
+                        } else if (selectedOption === index) {
+                            optionClass = "bg-brand-gold/10 border-brand-gold text-white";
+                        }
 
-                            return (
-                                <button
-                                    key={index}
-                                    disabled={isAnswered}
-                                    onClick={() => handleOptionSelect(index)}
-                                    className={`w-full text-left p-5 rounded-2xl border-2 transition-all flex items-center justify-between group ${optionClass}`}
-                                >
-                                    <span className="text-base sm:text-lg font-medium pr-4">{option.option || option}</span>
-                                    {Icon && (
-                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                                            <Icon className="w-6 h-6 shrink-0" />
-                                        </motion.div>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </motion.div>
-            </AnimatePresence>
+                        return (
+                            <button
+                                key={index}
+                                disabled={isAnswered}
+                                onClick={() => handleOptionSelect(index)}
+                                className={`w-full text-left p-5 rounded-2xl border-2 transition-all flex items-center justify-between group ${optionClass}`}
+                            >
+                                <span className="text-base sm:text-lg font-medium pr-4">{option.option || option}</span>
+                                {Icon && (
+                                    <Icon className="w-6 h-6 shrink-0" />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
     );
 }

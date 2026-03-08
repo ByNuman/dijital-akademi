@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
 export function Accordion({ items, className = "" }) {
@@ -23,30 +22,21 @@ export function Accordion({ items, className = "" }) {
                                 }`}>
                                 {item.question}
                             </span>
-                            <motion.div
-                                animate={{ rotate: isOpen ? 180 : 0 }}
-                                transition={{ duration: 0.2 }}
-                                className={`p-1 rounded-full shrink-0 transition-colors ${isOpen ? "bg-brand-gold/20 text-brand-gold" : "bg-white/5 text-gray-400"
+                            <div
+                                className={`p-1 rounded-full shrink-0 transition-all duration-200 ${isOpen ? "bg-brand-gold/20 text-brand-gold rotate-180" : "bg-white/5 text-gray-400 rotate-0"
                                     }`}
                             >
                                 <ChevronDown className="w-5 h-5" />
-                            </motion.div>
+                            </div>
                         </button>
 
-                        <AnimatePresence>
-                            {isOpen && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: "auto", opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                                >
-                                    <div className="px-6 pb-6 pt-0 text-gray-400 text-base leading-relaxed">
-                                        {item.answer}
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <div
+                            className={`transition-all duration-200 ease-in-out overflow-hidden ${isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+                        >
+                            <div className="px-6 pb-6 pt-0 text-gray-400 text-base leading-relaxed">
+                                {item.answer}
+                            </div>
+                        </div>
                     </div>
                 );
             })}

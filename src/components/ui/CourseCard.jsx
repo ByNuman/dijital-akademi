@@ -1,11 +1,9 @@
-import { motion } from "framer-motion";
 import { Star, User } from "lucide-react";
 
 export function CourseCard({ course }) {
     return (
-        <motion.div
-            whileHover={{ y: -8 }}
-            className="group relative overflow-hidden rounded-2xl glass-effect border-brand-gold/20 hover:border-brand-gold/60 transition-colors duration-300 gold-glow"
+        <div
+            className="group relative overflow-hidden rounded-2xl glass-effect border-brand-gold/20 hover:border-brand-gold/60 transition-all duration-300 hover:-translate-y-2 gold-glow"
         >
             {course.ribbon && (
                 <div className="absolute top-4 right-0 z-10 bg-brand-gold text-brand-black text-xs font-bold px-4 py-1.5 rounded-l-full shadow-lg">
@@ -17,7 +15,7 @@ export function CourseCard({ course }) {
                 <img
                     src={course.image}
                     alt={course.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 to-transparent"></div>
             </div>
@@ -40,6 +38,6 @@ export function CourseCard({ course }) {
                     <span className="font-medium text-gray-300">{course.instructor}</span>
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 }

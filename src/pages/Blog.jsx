@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+
 import { BookText, ArrowRight, ArrowUpRight, Search, FileSymlink, Sparkles } from "lucide-react";
 import { Button } from "../components/ui/Button";
 
@@ -45,14 +45,11 @@ export function Blog() {
                 {/* Header Graphic */}
                 <div className="text-center mb-16 relative pb-10">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-brand-gold/5 blur-[100px] rounded-full pointer-events-none"></div>
-                    <motion.div
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", bounce: 0.5 }}
+                    <div
                         className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-tr from-brand-gold to-yellow-200 rounded-2xl mb-8 shadow=[0_0_30px_rgba(251,191,36,0.2)] relative z-10 text-brand-black"
                     >
                         <BookText className="w-10 h-10" />
-                    </motion.div>
+                    </div>
                     <h1 className="text-4xl md:text-6xl font-black text-white mb-6 relative z-10 tracking-tight">Akademik <span className="text-brand-gold">Makaleler</span></h1>
                     <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto relative z-10 font-medium">Ufuk açıcı okumalar, metodoloji tahlilleri ve akademi içerik kütüphanesine hoş geldiniz.</p>
                 </div>
@@ -109,10 +106,7 @@ export function Blog() {
                         </div>
 
                         {activeReadings.map((reading, index) => (
-                            <motion.article
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.15 }}
+                            <article
                                 key={reading.id}
                                 className="group grid grid-cols-1 md:grid-cols-12 gap-6 items-center"
                             >
@@ -149,7 +143,7 @@ export function Blog() {
                                         <span className="text-sm font-semibold text-gray-300">{reading.author}</span>
                                     </div>
                                 </div>
-                            </motion.article>
+                            </article>
                         ))}
                     </div>
                 </div>

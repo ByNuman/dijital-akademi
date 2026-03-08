@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+
 import { Helmet } from 'react-helmet-async';
 import { BookOpen, Clock, Calendar, PlayCircle, Trophy, Settings, SearchX } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -53,10 +53,7 @@ export function Dashboard() {
                             <div className="grid grid-cols-1 gap-6">
                                 {savedCourses.length > 0 ? (
                                     savedCourses.map((course, index) => (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.1 }}
+                                        <div
                                             key={course.id}
                                             className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6 flex flex-col sm:flex-row gap-6 group hover:border-brand-gold/30 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                                         >
@@ -79,11 +76,9 @@ export function Dashboard() {
                                                         <span className="text-sm font-bold text-brand-gold">%{course.progress || 0}</span>
                                                     </div>
                                                     <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden mb-4 border border-white/5">
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${course.progress || 0}%` }}
-                                                            transition={{ duration: 1, ease: "easeOut" }}
-                                                            className="bg-gradient-to-r from-brand-gold to-brand-gold-dark h-full rounded-full"
+                                                        <div
+                                                            className="bg-gradient-to-r from-brand-gold to-brand-gold-dark h-full rounded-full transition-all duration-700"
+                                                            style={{ width: `${course.progress || 0}%` }}
                                                         />
                                                     </div>
                                                     <div className="flex justify-between items-center">
@@ -99,7 +94,7 @@ export function Dashboard() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </motion.div>
+                                        </div>
                                     ))
                                 ) : (
                                     <div className="bg-[#1A1A1A] border border-white/5 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center">
@@ -120,9 +115,7 @@ export function Dashboard() {
                     {/* Sidebar - Upcoming & Stats */}
                     <div className="lg:col-span-1 space-y-8">
                         {/* Gamification Level Box */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
+                        <div
                             className="bg-gradient-to-br from-[#1A1A1A] to-[#111] rounded-2xl border border-brand-gold/20 p-6 relative overflow-hidden shadow-[0_0_30px_rgba(251,191,36,0.1)]"
                         >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 blur-[50px] rounded-full pointer-events-none"></div>
@@ -145,11 +138,9 @@ export function Dashboard() {
                                     <span>{xpForNextLevel} XP</span>
                                 </div>
                                 <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${xpProgress}%` }}
-                                        transition={{ duration: 1, ease: "easeOut" }}
-                                        className="bg-gradient-to-r from-brand-gold to-yellow-200 h-full rounded-full"
+                                    <div
+                                        className="bg-gradient-to-r from-brand-gold to-yellow-200 h-full rounded-full transition-all duration-700"
+                                        style={{ width: `${xpProgress}%` }}
                                     />
                                 </div>
                             </div>
@@ -159,7 +150,7 @@ export function Dashboard() {
                                     Liderlik Tablosunu Gör
                                 </Button>
                             </Link>
-                        </motion.div>
+                        </div>
 
                         {/* Stats Box */}
                         <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6 md:mt-0 mt-8">

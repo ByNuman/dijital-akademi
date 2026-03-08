@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+
 import { Trophy, Medal, Star, ChevronUp, ChevronDown, Minus } from "lucide-react";
 import { useLibrary } from "../context/LibraryContext";
 import { studentData } from "../data/studentData";
@@ -43,14 +43,11 @@ export function Leaderboard() {
                 {/* Header Graphic */}
                 <div className="text-center mb-12 relative pb-10">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-brand-gold/20 blur-[60px] rounded-full pointer-events-none"></div>
-                    <motion.div
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", bounce: 0.5 }}
+                    <div
                         className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-tr from-brand-gold to-yellow-200 rounded-full mb-6 shadow-[#FBBF24]/20 shadow-2xl relative z-10"
                     >
                         <Trophy className="w-12 h-12 text-brand-black" />
-                    </motion.div>
+                    </div>
                     <h1 className="text-4xl md:text-5xl font-black text-white mb-4 relative z-10">Akademi Liderlik Tablosu</h1>
                     <p className="text-gray-400 text-lg max-w-2xl mx-auto relative z-10">Eğitimleri tamamla, testleri çöz, XP kazan ve akademinin en başarılı öğrencileri arasında adını yazdır.</p>
                 </div>
@@ -98,10 +95,7 @@ export function Leaderboard() {
 
                             <div className="p-2">
                                 {leaderboardData.map((student, index) => (
-                                    <motion.div
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: index * 0.1 }}
+                                    <div
                                         key={student.id}
                                         className={`flex items-center justify-between p-4 my-2 rounded-2xl transition-all ${student.isCurrentUser
                                                 ? "bg-brand-gold/10 border border-brand-gold/30 shadow-[inset_0_0_20px_rgba(251,191,36,0.05)]"
@@ -142,7 +136,7 @@ export function Leaderboard() {
                                                 <div className="text-[10px] text-brand-gold font-bold uppercase tracking-wider">XP</div>
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 ))}
                             </div>
                         </div>

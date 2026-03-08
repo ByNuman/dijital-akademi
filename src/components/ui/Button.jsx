@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -12,7 +11,7 @@ export function Button({
     className,
     ...props
 }) {
-    const baseStyles = "inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 focus:ring-offset-brand-black";
+    const baseStyles = "inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 focus:ring-offset-brand-black active:scale-95";
 
     const variants = {
         primary: "bg-brand-gold text-brand-black hover:bg-brand-gold-dark gold-glow",
@@ -21,13 +20,11 @@ export function Button({
     };
 
     return (
-        <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
+        <button
             className={cn(baseStyles, variants[variant], className)}
             {...props}
         >
             {children}
-        </motion.button>
+        </button>
     );
 }

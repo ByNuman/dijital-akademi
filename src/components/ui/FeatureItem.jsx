@@ -1,16 +1,9 @@
-import { motion } from "framer-motion";
-
 export function FeatureItem({ feature, index }) {
     const Icon = feature.icon;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ delay: index * 0.1, duration: 0.5 }}
-            whileHover={{ y: -5 }}
-            className="glass-effect p-6 rounded-2xl border-brand-gold/10 hover:border-brand-gold/40 transition-colors gold-glow flex flex-col items-start h-full"
+        <div
+            className="glass-effect p-6 rounded-2xl border-brand-gold/10 hover:border-brand-gold/40 transition-all hover:-translate-y-1 gold-glow flex flex-col items-start h-full"
         >
             <div className="w-14 h-14 rounded-full bg-brand-gold/10 flex items-center justify-center mb-6 border border-brand-gold/20 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
                 <Icon className="w-7 h-7 text-brand-gold" />
@@ -19,6 +12,6 @@ export function FeatureItem({ feature, index }) {
             <p className="text-gray-400 leading-relaxed text-sm">
                 {feature.description}
             </p>
-        </motion.div>
+        </div>
     );
 }

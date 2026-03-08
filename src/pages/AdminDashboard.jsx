@@ -5,8 +5,8 @@ import { collection, setDoc, doc, getDocs, deleteDoc, updateDoc } from "firebase
 import { courses as coursesData } from "../data/coursesData";
 import { toast } from "sonner";
 import { Button } from "../components/ui/Button";
-import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Database, LayoutDashboard, LayoutList, Trash2, Edit, BookOpen, Users, Trophy } from "lucide-react";
+
+import { Plus, Database, LayoutDashboard, LayoutList, Trash2, Edit, BookOpen, Users, Trophy, HelpCircle, X as XIcon } from "lucide-react";
 
 export function AdminDashboard() {
     const { userData } = useAuth();
@@ -23,8 +23,12 @@ export function AdminDashboard() {
         pdfUrl: "",
         slideUrl: "",
         audioUrl: "",
-        duration: "",
-        testUrl: ""
+        questions: []
+    });
+    const [questionForm, setQuestionForm] = useState({
+        text: "",
+        options: ["", "", "", ""],
+        correctAnswer: 0
     });
 
     const predefinedCourses = {
@@ -108,9 +112,8 @@ export function AdminDashboard() {
                 id: courseId,
                 rating: 0,
                 students: 0,
-                price: 0, // Ücretsiz default
+                price: 0,
                 level: "Tüm Seviyeler",
-                duration: "Belirtilmedi",
                 instructor: userData?.name || "Eğitmen Akademi",
                 tags: [],
                 modules: [
@@ -121,13 +124,14 @@ export function AdminDashboard() {
                         pdfUrl: "",
                         slideUrl: "",
                         audioUrl: "",
-                        duration: "5 dk",
-                        testUrl: ""
+                        questions: []
                     }
                 ]
             };
 
-            await setDoc(doc(db, "courses", courseId), newCourse);
+            // Firestore'a göndermeden önce tüm veriyi saf JSON objesine dönüştür
+            const cleanCourse = JSON.parse(JSON.stringify(newCourse));
+            await setDoc(doc(db, "courses", courseId), cleanCourse);
             
             toast.success("Ders başarıyla eklendi!", {
                 style: { background: "#FBBF24", color: "#101010", border: "none" }
@@ -170,7 +174,7 @@ export function AdminDashboard() {
     };
 
     const handleUpdateCourse = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         if (!editingCourse.title || !editingCourse.description || !editingCourse.category) {
             toast.error("Lütfen zorunlu alanları doldurun.");
             return;
@@ -178,7 +182,27 @@ export function AdminDashboard() {
 
         setIsSubmitting(true);
         try {
-            await updateDoc(doc(db, "courses", editingCourse.id), editingCourse);
+            // Firestore'a gönderilecek veriyi hazırla - id alanını çıkar ve saf JSON objesine dönüştür
+            const { id, ...courseDataToSave } = editingCourse;
+            // undefined, fonksiyon vb. serileştirilemez değerleri temizle
+            const cleanData = JSON.parse(JSON.stringify(courseDataToSave));
+            // Modüller içindeki boş string alanları da temizle (Firestore uyumu)
+            if (cleanData.modules) {
+                cleanData.modules = cleanData.modules.map(m => ({
+                    title: m.title || "",
+                    imageUrl: m.imageUrl || "",
+                    description: m.description || "",
+                    pdfUrl: m.pdfUrl || "",
+                    slideUrl: m.slideUrl || "",
+                    audioUrl: m.audioUrl || "",
+                    questions: Array.isArray(m.questions) ? m.questions.map(q => ({
+                        text: q.text || "",
+                        options: Array.isArray(q.options) ? q.options.map(o => String(o)) : ["", "", "", ""],
+                        correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0
+                    })) : []
+                }));
+            }
+            await updateDoc(doc(db, "courses", id), cleanData);
             toast.success("Ders detayları ve konuları başarıyla güncellendi!", {
                 style: { background: "#10B981", color: "#fff", border: "none" }
             });
@@ -200,10 +224,50 @@ export function AdminDashboard() {
         }
         setEditingCourse(prev => ({
             ...prev,
-            modules: [...(prev.modules || []), moduleForm]
+            modules: [...(prev.modules || []), { ...moduleForm }]
         }));
-        setModuleForm({ title: "", imageUrl: "", description: "", pdfUrl: "", slideUrl: "", audioUrl: "", testUrl: "", duration: "" });
+        setModuleForm({ title: "", imageUrl: "", description: "", pdfUrl: "", slideUrl: "", audioUrl: "", questions: [] });
+        setQuestionForm({ text: "", options: ["", "", "", ""], correctAnswer: 0 });
         toast.success("Konu dizeye eklendi (Değişiklikleri kaydetmeyi unutmayın).");
+    };
+
+    // Modüle soru ekleme (yeni konu ekleme formundan)
+    const handleAddQuestionToModuleForm = () => {
+        if (!questionForm.text || questionForm.options.some(o => !o.trim())) {
+            toast.error("Soru metni ve tüm şıklar zorunludur.");
+            return;
+        }
+        setModuleForm(prev => ({
+            ...prev,
+            questions: [...(prev.questions || []), { ...questionForm }]
+        }));
+        setQuestionForm({ text: "", options: ["", "", "", ""], correctAnswer: 0 });
+        toast.success("Soru eklendi!");
+    };
+
+    // Mevcut modüle soru ekleme (edit modundan)
+    const handleAddQuestionToExistingModule = (moduleIndex) => {
+        if (!questionForm.text || questionForm.options.some(o => !o.trim())) {
+            toast.error("Soru metni ve tüm şıklar zorunludur.");
+            return;
+        }
+        setEditingCourse(prev => {
+            const newModules = [...(prev.modules || [])];
+            if (!newModules[moduleIndex].questions) newModules[moduleIndex].questions = [];
+            newModules[moduleIndex].questions.push({ ...questionForm });
+            return { ...prev, modules: newModules };
+        });
+        setQuestionForm({ text: "", options: ["", "", "", ""], correctAnswer: 0 });
+        toast.success("Soru modüle eklendi!");
+    };
+
+    // Modülden soru silme
+    const handleDeleteQuestion = (moduleIndex, questionIndex) => {
+        setEditingCourse(prev => {
+            const newModules = [...(prev.modules || [])];
+            newModules[moduleIndex].questions.splice(questionIndex, 1);
+            return { ...prev, modules: newModules };
+        });
     };
 
     const handleDeleteModule = (index) => {
@@ -255,9 +319,7 @@ export function AdminDashboard() {
                 <div className="flex flex-col md:flex-row gap-8">
                     
                     {/* Sidebar */}
-                    <motion.div 
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                    <div 
                         className="w-full md:w-64 shrink-0"
                     >
                         <div className="bg-[#1A1A1A] p-6 rounded-2xl border border-white/5 sticky top-32">
@@ -282,17 +344,12 @@ export function AdminDashboard() {
                                 })}
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Main Content */}
                     <div className="flex-1">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeTab}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
+                        
+                            <div
                             >
                                 {/* Overview Tab */}
                                 {activeTab === "overview" && (
@@ -571,9 +628,8 @@ export function AdminDashboard() {
                                                                         {mod.pdfUrl && <span className="text-brand-gold pr-2 border-r border-white/10">PDF</span>}
                                                                         {mod.slideUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Slayt</span>}
                                                                         {mod.audioUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Ses</span>}
-                                                                        {mod.duration && <span className="text-brand-gold pr-2 border-r border-white/10">{mod.duration}</span>}
-                                                                        {mod.testUrl && <span className="text-brand-gold">Test</span>}
-                                                                        {!(mod.imageUrl || mod.pdfUrl || mod.slideUrl || mod.audioUrl || mod.testUrl) && <span>İçerik yok</span>}
+                                                                        {(mod.questions && mod.questions.length > 0) && <span className="text-brand-gold">{mod.questions.length} Soru</span>}
+                                                                        {!(mod.imageUrl || mod.pdfUrl || mod.slideUrl || mod.audioUrl || (mod.questions && mod.questions.length > 0)) && <span>İçerik yok</span>}
                                                                     </div>
                                                                 </div>
                                                                 <button 
@@ -615,7 +671,7 @@ export function AdminDashboard() {
                                                         </div>
                                                     </div>
                                                     
-                                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                         <input 
                                                             type="url" 
                                                             placeholder="PDF Linki (İsteğe Bağlı)" 
@@ -637,20 +693,6 @@ export function AdminDashboard() {
                                                             onChange={(e) => setModuleForm({ ...moduleForm, audioUrl: e.target.value })}
                                                             className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
                                                         />
-                                                        <input 
-                                                            type="url" 
-                                                            placeholder="Google Form/Test (İsteğe Bağlı)" 
-                                                            value={moduleForm.testUrl || ''}
-                                                            onChange={(e) => setModuleForm({ ...moduleForm, testUrl: e.target.value })}
-                                                            className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
-                                                        />
-                                                        <input 
-                                                            type="text" 
-                                                            placeholder="Okuma Süresi (örn. 15 dk)" 
-                                                            value={moduleForm.duration || ''}
-                                                            onChange={(e) => setModuleForm({ ...moduleForm, duration: e.target.value })}
-                                                            className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
-                                                        />
                                                     </div>
 
                                                     <textarea 
@@ -660,6 +702,86 @@ export function AdminDashboard() {
                                                         rows="2"
                                                         className="w-full bg-[#1A1A1A] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none resize-none transition-colors"
                                                     />
+
+                                                    {/* Test Soruları Ekleme */}
+                                                    <div className="border-t border-white/5 pt-4">
+                                                        <h5 className="text-sm font-bold text-brand-gold flex items-center gap-2 mb-3">
+                                                            <HelpCircle size={14} /> Test Soruları (İsteğe Bağlı)
+                                                        </h5>
+                                                        
+                                                        {/* Eklenen Sorular */}
+                                                        {(moduleForm.questions || []).length > 0 && (
+                                                            <div className="space-y-2 mb-4">
+                                                                {moduleForm.questions.map((q, qi) => (
+                                                                    <div key={qi} className="bg-[#1A1A1A] p-3 rounded-lg border border-white/5 flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="text-sm text-white font-medium">S{qi + 1}: {q.text}</p>
+                                                                            <div className="flex flex-wrap gap-2 mt-1">
+                                                                                {q.options.map((opt, oi) => (
+                                                                                    <span key={oi} className={`text-xs px-2 py-0.5 rounded ${oi === q.correctAnswer ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-500'}`}>
+                                                                                        {String.fromCharCode(65 + oi)}) {opt}
+                                                                                    </span>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                        <button type="button" onClick={() => {
+                                                                            setModuleForm(prev => ({
+                                                                                ...prev,
+                                                                                questions: prev.questions.filter((_, i) => i !== qi)
+                                                                            }));
+                                                                        }} className="text-red-500 hover:bg-red-500/10 p-1 rounded shrink-0">
+                                                                            <XIcon size={14} />
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Yeni Soru Formu */}
+                                                        <div className="bg-[#1A1A1A] p-4 rounded-lg border border-white/5 space-y-3">
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Soru metni *"
+                                                                value={questionForm.text}
+                                                                onChange={(e) => setQuestionForm({ ...questionForm, text: e.target.value })}
+                                                                className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                            />
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                {questionForm.options.map((opt, idx) => (
+                                                                    <div key={idx} className="flex items-center gap-2">
+                                                                        <input
+                                                                            type="radio"
+                                                                            name="newModuleCorrectAnswer"
+                                                                            checked={questionForm.correctAnswer === idx}
+                                                                            onChange={() => setQuestionForm({ ...questionForm, correctAnswer: idx })}
+                                                                            className="accent-brand-gold shrink-0"
+                                                                            title="Doğru cevap olarak seç"
+                                                                        />
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder={`${String.fromCharCode(65 + idx)} Şıkkı *`}
+                                                                            value={opt}
+                                                                            onChange={(e) => {
+                                                                                const newOpts = [...questionForm.options];
+                                                                                newOpts[idx] = e.target.value;
+                                                                                setQuestionForm({ ...questionForm, options: newOpts });
+                                                                            }}
+                                                                            className="flex-1 bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <p className="text-xs text-gray-500">Doğru cevabı seçmek için şıkkın yanındaki radyo butonuna tıklayın.</p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={handleAddQuestionToModuleForm}
+                                                                className="text-sm bg-brand-gold/10 border border-brand-gold/30 text-brand-gold px-4 py-2 rounded-lg hover:bg-brand-gold/20 transition-colors font-medium"
+                                                            >
+                                                                + Soruyu Ekle
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
                                                     <div className="flex justify-end">
                                                         <Button 
                                                             type="button"
@@ -716,8 +838,8 @@ export function AdminDashboard() {
                                         </div>
                                     </div>
                                 )}
-                            </motion.div>
-                        </AnimatePresence>
+                            </div>
+                        
                     </div>
 
                 </div>

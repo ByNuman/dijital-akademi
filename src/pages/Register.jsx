@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+
 import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -37,10 +37,7 @@ export function Register() {
                 <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-brand-gold/10 blur-[150px] rounded-full pointer-events-none"></div>
             </div>
 
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
+            <div
                 className="w-full max-w-md relative z-10"
             >
                 <div className="text-center mb-10">
@@ -124,7 +121,7 @@ export function Register() {
                 <p className="text-center text-xs text-gray-600 mt-6 max-w-xs mx-auto">
                     Kayıt olarak, <a href="#" className="underline hover:text-brand-gold">Kullanım Koşulları</a> ve <a href="#" className="underline hover:text-brand-gold">Gizlilik Politikamızı</a> kabul etmiş olursunuz.
                 </p>
-            </motion.div>
+            </div>
         </div>
     );
 }

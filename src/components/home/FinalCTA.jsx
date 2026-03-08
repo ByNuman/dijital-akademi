@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Button } from "../ui/Button";
 
 export function FinalCTA() {
@@ -10,28 +9,17 @@ export function FinalCTA() {
             </div>
 
             <div className="container mx-auto px-6 md:px-12 relative z-10 text-center">
-                <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
+                <h2
                     className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-8"
                 >
                     Sen de <span className="text-brand-gold">İlim Yolculuğuna</span> Katıl
-                </motion.h2>
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 }}
+                </h2>
+                <p
                     className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto mb-12 leading-relaxed"
                 >
                     Seçkin akademik kadromuzla, geleceğin dindar, aydınlık ve vizyoner nesillerini yetiştiren bu benzersiz platformda yerinizi hemen alın.
-                </motion.p>
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.4 }}
+                </p>
+                <div
                     className="flex flex-col sm:flex-row justify-center gap-5"
                 >
                     <Button variant="primary" className="text-base px-10 py-4 !rounded-xl font-bold shadow-[0_5px_20px_rgba(251,191,36,0.3)] hover:shadow-[0_8px_30px_rgba(251,191,36,0.5)]">
@@ -40,7 +28,7 @@ export function FinalCTA() {
                     <Button variant="outline" className="text-base px-10 py-4 !rounded-xl font-bold bg-brand-slate group">
                         Detaylı Bilgi Al
                     </Button>
-                </motion.div>
+                </div>
             </div>
         </section>
     );
