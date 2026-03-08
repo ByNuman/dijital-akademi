@@ -1,4 +1,4 @@
-import { Star, User } from "lucide-react";
+import { Star, BookOpen } from "lucide-react";
 
 export function CourseCard({ course }) {
     return (
@@ -22,21 +22,24 @@ export function CourseCard({ course }) {
 
             <div className="p-6 relative">
                 <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center text-brand-gold text-sm font-bold bg-brand-gold/10 px-2 py-1 rounded-full">
-                        <Star className="w-4 h-4 fill-current mr-1" />
-                        <span>{course.rating}</span>
-                        <span className="text-gray-400 text-xs ml-1 font-normal">({course.reviews || (course.students ? `${course.students}+` : '')})</span>
-                    </div>
+                    {course.rating > 0 ? (
+                        <div className="flex items-center text-brand-gold text-sm font-bold bg-brand-gold/10 px-2 py-1 rounded-full">
+                            <Star className="w-4 h-4 fill-current mr-1" />
+                            <span>{course.rating}</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center text-brand-gold text-sm font-bold bg-brand-gold/10 px-2 py-1 rounded-full">
+                            <BookOpen className="w-4 h-4 mr-1" />
+                            <span>{course.modules?.length || 0} Konu</span>
+                        </div>
+                    )}
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 leading-tight">{course.title}</h3>
 
-                <div className="flex items-center text-gray-400 text-sm">
-                    <div className="w-8 h-8 rounded-full bg-brand-slate flex items-center justify-center mr-3 border border-white/10">
-                        <User className="w-4 h-4 text-brand-gold" />
-                    </div>
-                    <span className="font-medium text-gray-300">{course.instructor}</span>
-                </div>
+                <p className="text-gray-400 text-sm line-clamp-1">
+                    {course.category}
+                </p>
             </div>
         </div>
     );

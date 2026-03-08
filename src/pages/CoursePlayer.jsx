@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 
 import {
@@ -22,17 +22,23 @@ export function CoursePlayer() {
     const course = courses.find(c => c.id === courseId) || null;
     const loading = contextLoading;
 
-    const { addXp } = useLibrary();
+    const { addXp, updateCourseProgress, isCourseInLibrary } = useLibrary();
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeLesson, setActiveLesson] = useState(1);
-    const [activeTab, setActiveTab] = useState("genel_bakis"); // genel_bakis, materyaller, tartisma
+    const [activeTab, setActiveTab] = useState("genel_bakis");
     const [isQuizActive, setIsQuizActive] = useState(false);
     const [activePdfUrl, setActivePdfUrl] = useState(null);
     const [activeSlideUrl, setActiveSlideUrl] = useState(null);
     const [activeAudioUrl, setActiveAudioUrl] = useState(null);
 
-    // Change Curriculum to State for interactivity
+    // Materyal bazlı ilerleme takibi: { "lessonId-materialType": true }
+    // materialType: "pdf", "slide", "audio", "quiz"
+    const [completedMaterials, setCompletedMaterials] = useState(() => {
+        const saved = localStorage.getItem(`progress_${courseId}`);
+        return saved ? JSON.parse(saved) : {};
+    });
+
     const [curriculum, setCurriculum] = useState([]);
 
     useEffect(() => {
@@ -50,18 +56,15 @@ export function CoursePlayer() {
                         pdfUrl: m.pdfUrl,
                         slideUrl: m.slideUrl,
                         audioUrl: m.audioUrl,
-                        type: "lesson",
-                        completed: false
+                        type: "lesson"
                     }))
                 }
             ];
-            
-            // Eğer istersen sonuna genel quiz eklenebilir. Şimdilik kaldırabiliriz veya durabilir.
+
             formattedCurriculum[0].lessons.push({
                 id: 999,
                 title: "Eğitim Sonu Değerlendirmesi",
-                type: "quiz",
-                completed: false
+                type: "quiz"
             });
 
             setCurriculum(formattedCurriculum);
@@ -74,34 +77,126 @@ export function CoursePlayer() {
         }
     }, [course]);
 
-    // const getEmbedUrl = (url) => ...
+    // Helper: her konu için mevcut materyal sayısını hesapla
+    const getMaterialCount = useCallback((lesson) => {
+        if (!lesson || lesson.type === "quiz") return 1; // Genel quiz tek materyal
+        let count = 0;
+        if (lesson.pdfUrl) count++;
+        if (lesson.slideUrl) count++;
+        if (lesson.audioUrl) count++;
+        if (lesson.questions && lesson.questions.length > 0) count++;
+        return Math.max(count, 1); // en az 1 olsun
+    }, []);
 
+    // Helper: bir konunun tamamlanan materyal sayısı
+    const getCompletedMaterialCount = useCallback((lessonId) => {
+        let count = 0;
+        if (completedMaterials[`${lessonId}-pdf`]) count++;
+        if (completedMaterials[`${lessonId}-slide`]) count++;
+        if (completedMaterials[`${lessonId}-audio`]) count++;
+        if (completedMaterials[`${lessonId}-quiz`]) count++;
+        return count;
+    }, [completedMaterials]);
+
+    // Helper: konu ilerleme yüzdesi
+    const getLessonProgress = useCallback((lesson) => {
+        const total = getMaterialCount(lesson);
+        const completed = getCompletedMaterialCount(lesson.id);
+        return Math.round((completed / total) * 100);
+    }, [getMaterialCount, getCompletedMaterialCount]);
+
+    // Materyal tamamlandığında çağır
+    const markMaterialComplete = useCallback((lessonId, materialType) => {
+        const key = `${lessonId}-${materialType}`;
+        if (completedMaterials[key]) return; // zaten tamamlanmış
+
+        setCompletedMaterials(prev => {
+            const updated = { ...prev, [key]: true };
+            // localStorage'a kaydet
+            localStorage.setItem(`progress_${courseId}`, JSON.stringify(updated));
+            return updated;
+        });
+
+        // XP kazandır (admin değilse)
+        addXp(50);
+        toast.success(`Materyal tamamlandı! +50 XP`, {
+            style: { background: "#10B981", color: "#fff", border: "none" }
+        });
+    }, [completedMaterials, courseId, addXp]);
+
+    // Stable refs for functions to avoid infinite loops
+    const updateProgressRef = useRef(updateCourseProgress);
+    const isInLibraryRef = useRef(isCourseInLibrary);
+    useEffect(() => { updateProgressRef.current = updateCourseProgress; }, [updateCourseProgress]);
+    useEffect(() => { isInLibraryRef.current = isCourseInLibrary; }, [isCourseInLibrary]);
+
+    // İlerleme hesapla ve Firestore'a senkronize et
+    useEffect(() => {
+        if (!curriculum.length) return;
+        const allLessons = curriculum.flatMap(m => m.lessons);
+        if (!allLessons.length) return;
+
+        let totalMaterials = 0;
+        let totalCompleted = 0;
+        allLessons.forEach(lesson => {
+            totalMaterials += getMaterialCount(lesson);
+            totalCompleted += getCompletedMaterialCount(lesson.id);
+        });
+
+        const newProgress = totalMaterials > 0 ? Math.round((totalCompleted / totalMaterials) * 100) : 0;
+
+        if (isInLibraryRef.current(courseId)) {
+            updateProgressRef.current(courseId, newProgress);
+        }
+    }, [completedMaterials, curriculum, courseId, getMaterialCount, getCompletedMaterialCount]);
+
+    // Konuyu elle tamamla/geri al (sol sidebar)
     const toggleLessonComplete = (lessonId, e) => {
-        e.stopPropagation(); // prevent setActiveLesson if clicking exactly on complete icon (though we apply it to generic click here)
-        setCurriculum(prev => prev.map(mod => ({
-            ...mod,
-            lessons: mod.lessons.map(l => {
-                if (l.id === lessonId) {
-                    const act = !l.completed;
-                    if (act) {
-                        toast.success(`"${l.title}" tamamlandı işaretlendi!`, {
-                            style: { background: "#10B981", color: "#fff", border: "none" }
-                        });
-                        addXp(100);
-                    }
-                    return { ...l, completed: act };
-                }
-                return l;
-            })
-        })));
+        e.stopPropagation();
+        const lesson = curriculum.flatMap(m => m.lessons).find(l => l.id === lessonId);
+        if (!lesson) return;
+
+        const isFullyComplete = getLessonProgress(lesson) === 100;
+        if (isFullyComplete) {
+            // Tüm materyallerini geri al
+            setCompletedMaterials(prev => {
+                const updated = { ...prev };
+                delete updated[`${lessonId}-pdf`];
+                delete updated[`${lessonId}-slide`];
+                delete updated[`${lessonId}-audio`];
+                delete updated[`${lessonId}-quiz`];
+                localStorage.setItem(`progress_${courseId}`, JSON.stringify(updated));
+                return updated;
+            });
+        } else {
+            // Tüm materyallerini tamamla
+            setCompletedMaterials(prev => {
+                const updated = { ...prev };
+                if (lesson.pdfUrl) updated[`${lessonId}-pdf`] = true;
+                if (lesson.slideUrl) updated[`${lessonId}-slide`] = true;
+                if (lesson.audioUrl) updated[`${lessonId}-audio`] = true;
+                if (lesson.questions?.length > 0) updated[`${lessonId}-quiz`] = true;
+                if (lesson.type === "quiz") updated[`${lessonId}-quiz`] = true;
+                localStorage.setItem(`progress_${courseId}`, JSON.stringify(updated));
+                return updated;
+            });
+            addXp(100);
+            toast.success(`"${lesson.title}" tamamlandı!`, {
+                style: { background: "#10B981", color: "#fff", border: "none" }
+            });
+        }
     };
 
     const currentLessonData = curriculum.flatMap(m => m.lessons).find(l => l.id === activeLesson);
 
-    // Calculate total progress
+    // Ders toplam ilerleme yüzdesi
     const allLessons = curriculum.flatMap(m => m.lessons);
-    const completedCount = allLessons.filter(l => l.completed).length;
-    const progressPercentage = Math.round((completedCount / allLessons.length) * 100);
+    let totalMats = 0, completedMats = 0;
+    allLessons.forEach(l => {
+        totalMats += getMaterialCount(l);
+        completedMats += getCompletedMaterialCount(l.id);
+    });
+    const progressPercentage = totalMats > 0 ? Math.round((completedMats / totalMats) * 100) : 0;
 
     if (loading) {
         return (
@@ -188,8 +283,12 @@ export function CoursePlayer() {
                                                         onClick={(e) => toggleLessonComplete(lesson.id, e)}
                                                         title="Tamamlandı olarak işaretle"
                                                     >
-                                                        {lesson.completed ? (
+                                                        {getLessonProgress(lesson) === 100 ? (
                                                             <CheckCircle2 className="w-5 h-5 text-brand-gold hover:text-white transition-colors" />
+                                                        ) : getLessonProgress(lesson) > 0 ? (
+                                                            <div className={`w-5 h-5 rounded-full border-2 border-brand-gold/50 flex items-center justify-center`}>
+                                                                <div className="w-2.5 h-2.5 rounded-full bg-brand-gold/60"></div>
+                                                            </div>
                                                         ) : (
                                                             <div className={`w-5 h-5 rounded-full border-2 hover:border-brand-gold transition-colors flex items-center justify-center ${activeLesson === lesson.id ? "border-brand-gold/50" : "border-gray-500"}`}></div>
                                                         )}
@@ -198,8 +297,11 @@ export function CoursePlayer() {
                                                         <div className={`text-sm font-medium mb-1 truncate ${activeLesson === lesson.id ? "text-white" : "text-gray-400"}`}>
                                                             {lesson.title}
                                                         </div>
-                                                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                                                            Modül Eğitimi
+                                                        <div className="text-xs text-gray-500 flex items-center gap-2">
+                                                            <span>%{getLessonProgress(lesson)}</span>
+                                                            <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-brand-gold rounded-full transition-all" style={{ width: `${getLessonProgress(lesson)}%` }}></div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </button>
@@ -248,7 +350,10 @@ export function CoursePlayer() {
                         {isQuizActive ? (
                             <div className="flex-1 mt-4">
                                 <Quiz
-                                    onComplete={() => setIsQuizActive(false)}
+                                    onComplete={() => {
+                                        setIsQuizActive(false);
+                                        markMaterialComplete(activeLesson, 'quiz');
+                                    }}
                                     onQuit={() => setIsQuizActive(false)}
                                     questions={currentLessonData?.questions}
                                 />
@@ -314,55 +419,79 @@ export function CoursePlayer() {
                                             {/* Dinamik Materyaller */}
                                             {currentLessonData?.pdfUrl && (
                                                 <div 
-                                                    onClick={() => setActivePdfUrl(currentLessonData.pdfUrl)}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-red-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
+                                                    onClick={() => {
+                                                        setActivePdfUrl(currentLessonData.pdfUrl);
+                                                        markMaterialComplete(activeLesson, 'pdf');
+                                                    }}
+                                                    className={`flex items-center justify-between p-6 bg-[#1A1A1A] border rounded-3xl hover:border-red-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg ${completedMaterials[`${activeLesson}-pdf`] ? 'border-green-500/30' : 'border-white/5'}`}
                                                 >
                                                     <div className="flex items-center gap-5">
-                                                        <div className="bg-red-500/10 p-4 rounded-2xl group-hover:bg-red-500/20 transition-colors">
+                                                        <div className="bg-red-500/10 p-4 rounded-2xl group-hover:bg-red-500/20 transition-colors relative">
                                                             <FileText className="w-8 h-8 text-red-400" />
+                                                            {completedMaterials[`${activeLesson}-pdf`] && (
+                                                                <CheckCircle2 className="w-4 h-4 text-green-400 absolute -top-1 -right-1" />
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <div className="text-white font-black text-xl group-hover:text-red-400 transition-colors">PDF Okuma</div>
-                                                            <div className="text-sm font-medium text-gray-500 mt-1">Detaylı Ders Notları</div>
+                                                            <div className="text-sm font-medium text-gray-500 mt-1">
+                                                                {completedMaterials[`${activeLesson}-pdf`] ? '✓ Tamamlandı' : 'Detaylı Ders Notları'}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <Button variant="outline" className="font-bold">Aç</Button>
+                                                    <Button variant="outline" className="font-bold">{completedMaterials[`${activeLesson}-pdf`] ? 'Tekrar Aç' : 'Aç'}</Button>
                                                 </div>
                                             )}
 
                                             {currentLessonData?.slideUrl && (
                                                 <div 
-                                                    onClick={() => setActiveSlideUrl(currentLessonData.slideUrl)}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-blue-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
+                                                    onClick={() => {
+                                                        setActiveSlideUrl(currentLessonData.slideUrl);
+                                                        markMaterialComplete(activeLesson, 'slide');
+                                                    }}
+                                                    className={`flex items-center justify-between p-6 bg-[#1A1A1A] border rounded-3xl hover:border-blue-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg ${completedMaterials[`${activeLesson}-slide`] ? 'border-green-500/30' : 'border-white/5'}`}
                                                 >
                                                     <div className="flex items-center gap-5">
-                                                        <div className="bg-blue-500/10 p-4 rounded-2xl group-hover:bg-blue-500/20 transition-colors">
+                                                        <div className="bg-blue-500/10 p-4 rounded-2xl group-hover:bg-blue-500/20 transition-colors relative">
                                                             <Monitor className="w-8 h-8 text-blue-400" />
+                                                            {completedMaterials[`${activeLesson}-slide`] && (
+                                                                <CheckCircle2 className="w-4 h-4 text-green-400 absolute -top-1 -right-1" />
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <div className="text-white font-black text-xl group-hover:text-blue-400 transition-colors">Slayt</div>
-                                                            <div className="text-sm font-medium text-gray-500 mt-1">Görsel Sunum (PDF)</div>
+                                                            <div className="text-sm font-medium text-gray-500 mt-1">
+                                                                {completedMaterials[`${activeLesson}-slide`] ? '✓ Tamamlandı' : 'Görsel Sunum (PDF)'}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <Button variant="outline" className="font-bold">İncele</Button>
+                                                    <Button variant="outline" className="font-bold">{completedMaterials[`${activeLesson}-slide`] ? 'Tekrar İncele' : 'İncele'}</Button>
                                                 </div>
                                             )}
 
                                             {currentLessonData?.audioUrl && (
                                                 <div 
-                                                    onClick={() => setActiveAudioUrl(currentLessonData.audioUrl)}
-                                                    className="flex items-center justify-between p-6 bg-[#1A1A1A] border border-white/5 rounded-3xl hover:border-purple-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg"
+                                                    onClick={() => {
+                                                        setActiveAudioUrl(currentLessonData.audioUrl);
+                                                        markMaterialComplete(activeLesson, 'audio');
+                                                    }}
+                                                    className={`flex items-center justify-between p-6 bg-[#1A1A1A] border rounded-3xl hover:border-purple-400/30 transition-all cursor-pointer group hover:-translate-y-1 shadow-lg ${completedMaterials[`${activeLesson}-audio`] ? 'border-green-500/30' : 'border-white/5'}`}
                                                 >
                                                     <div className="flex items-center gap-5">
-                                                        <div className="bg-purple-500/10 p-4 rounded-2xl group-hover:bg-purple-500/20 transition-colors">
+                                                        <div className="bg-purple-500/10 p-4 rounded-2xl group-hover:bg-purple-500/20 transition-colors relative">
                                                             <Headphones className="w-8 h-8 text-purple-400" />
+                                                            {completedMaterials[`${activeLesson}-audio`] && (
+                                                                <CheckCircle2 className="w-4 h-4 text-green-400 absolute -top-1 -right-1" />
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <div className="text-white font-black text-xl group-hover:text-purple-400 transition-colors">Sesli Özet</div>
-                                                            <div className="text-sm font-medium text-gray-500 mt-1">Dinleyerek Öğrenin (mp3)</div>
+                                                            <div className="text-sm font-medium text-gray-500 mt-1">
+                                                                {completedMaterials[`${activeLesson}-audio`] ? '✓ Tamamlandı' : 'Dinleyerek Öğrenin (mp3)'}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <Button variant="outline" className="font-bold">Dinle</Button>
+                                                    <Button variant="outline" className="font-bold">{completedMaterials[`${activeLesson}-audio`] ? 'Tekrar Dinle' : 'Dinle'}</Button>
                                                 </div>
                                             )}
 
@@ -375,24 +504,29 @@ export function CoursePlayer() {
 
                                             <div
                                                 onClick={() => setIsQuizActive(true)}
-                                                className="flex items-center justify-between p-6 bg-[#1A1A1C] border-2 border-brand-gold/20 rounded-3xl hover:border-brand-gold transition-all cursor-pointer group hover:-translate-y-1 shadow-[0_0_30px_rgba(251,191,36,0.05)] relative overflow-hidden md:col-span-2 xl:col-span-1"
+                                                className={`flex items-center justify-between p-6 bg-[#1A1A1C] border-2 rounded-3xl hover:border-brand-gold transition-all cursor-pointer group hover:-translate-y-1 shadow-[0_0_30px_rgba(251,191,36,0.05)] relative overflow-hidden md:col-span-2 xl:col-span-1 ${completedMaterials[`${activeLesson}-quiz`] ? 'border-green-500/30' : 'border-brand-gold/20'}`}
                                             >
                                                 <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/5 flex-transparent pointer-events-none"></div>
                                                 <div className="flex items-center gap-5 relative z-10">
-                                                    <div className="bg-brand-gold p-4 rounded-2xl text-brand-black group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(251,191,36,0.3)]">
+                                                    <div className="bg-brand-gold p-4 rounded-2xl text-brand-black group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(251,191,36,0.3)] relative">
                                                         <CheckSquare className="w-8 h-8" />
+                                                        {completedMaterials[`${activeLesson}-quiz`] && (
+                                                            <CheckCircle2 className="w-4 h-4 text-green-400 absolute -top-1 -right-1" />
+                                                        )}
                                                     </div>
                                                     <div>
                                                         <div className="text-white font-black text-xl transition-colors">Modül Testi</div>
                                                         <div className="text-sm font-bold text-brand-gold/80 mt-1">
-                                                            {(currentLessonData?.questions && currentLessonData.questions.length > 0)
-                                                                ? `${currentLessonData.questions.length} Soru`
-                                                                : 'Bilginizi Sınayın'
+                                                            {completedMaterials[`${activeLesson}-quiz`]
+                                                                ? '✓ Tamamlandı'
+                                                                : (currentLessonData?.questions && currentLessonData.questions.length > 0)
+                                                                    ? `${currentLessonData.questions.length} Soru`
+                                                                    : 'Bilginizi Sınayın'
                                                             }
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <Button variant="primary" className="relative z-10 font-bold px-6 shadow-[0_0_15px_rgba(251,191,36,0.4)]">Çöz</Button>
+                                                <Button variant="primary" className="relative z-10 font-bold px-6 shadow-[0_0_15px_rgba(251,191,36,0.4)]">{completedMaterials[`${activeLesson}-quiz`] ? 'Tekrar Çöz' : 'Çöz'}</Button>
                                             </div>
                                         </div>
                                     )}

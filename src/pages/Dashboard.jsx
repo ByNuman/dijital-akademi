@@ -67,7 +67,7 @@ export function Dashboard() {
                                             <div className="flex-1 flex flex-col">
                                                 <div className="text-xs text-brand-gold font-bold mb-1">{course.category}</div>
                                                 <h3 className="text-xl font-bold text-white mb-1 group-hover:text-brand-gold transition-colors line-clamp-1">{course.title}</h3>
-                                                <p className="text-gray-400 text-sm mb-4">{course.instructor}</p>
+                                                <p className="text-gray-400 text-sm mb-4">{course.category}</p>
 
                                                 {/* Progress Bar */}
                                                 <div className="mt-auto">
@@ -163,7 +163,7 @@ export function Dashboard() {
                                     <div className="text-xs text-gray-400 font-medium">Kayıtlı Ders</div>
                                 </div>
                                 <div className="bg-white/5 rounded-xl p-4 text-center">
-                                    <div className="text-3xl font-black text-white mb-1">{Math.floor(savedCourses.length / 2)}</div>
+                                    <div className="text-3xl font-black text-white mb-1">{savedCourses.filter(c => (c.progress || 0) >= 100).length}</div>
                                     <div className="text-xs text-gray-400 font-medium">Biten Modül</div>
                                 </div>
                             </div>

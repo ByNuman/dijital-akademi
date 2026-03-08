@@ -18,7 +18,11 @@ export const CoursesProvider = ({ children }) => {
             const querySnapshot = await getDocs(collection(db, "courses"));
             const coursesData = [];
             querySnapshot.forEach((doc) => {
-                coursesData.push({ ...doc.data(), id: doc.id.toString() });
+                const data = doc.data();
+                // Admin paneli 'coverImage' olarak kaydediyor, bileşenler 'image' kullanıyor.
+                // Her iki alanı da desteklemek için normalleştir.
+                const image = data.image || data.coverImage || "";
+                coursesData.push({ ...data, id: doc.id.toString(), image, coverImage: data.coverImage || data.image || "" });
             });
             // Opsiyonel sıralama: id'ye veya başlığa göre
             // Ancak şu an olduğu gibi bırakabiliriz.

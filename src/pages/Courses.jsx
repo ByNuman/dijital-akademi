@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Search, Filter, Star, Users, Clock, ArrowRight } from "lucide-react";
+import { Search, Filter, Star, Users, Clock, ArrowRight, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { useCourses } from "../context/CoursesContext";
@@ -15,7 +15,7 @@ export function Courses() {
 
     const filteredCourses = courses.filter(course => {
         const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
+            (course.description || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = selectedCategory === "Tümü" || course.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
@@ -114,17 +114,24 @@ export function Courses() {
                                             {course.title}
                                         </h3>
                                         <p className="text-gray-400 text-sm mb-4">
-                                            {course.instructor}
+                                            {course.category}
                                         </p>
 
                                         <div className="flex items-center justify-between text-sm text-gray-500 mt-auto pt-4 border-t border-white/5">
-                                            <div className="flex items-center gap-1.5">
-                                                <Star className="w-4 h-4 text-brand-gold fill-brand-gold" />
-                                                <span className="text-white font-medium">{course.rating}</span>
-                                            </div>
+                                            {course.rating > 0 ? (
+                                                <div className="flex items-center gap-1.5">
+                                                    <Star className="w-4 h-4 text-brand-gold fill-brand-gold" />
+                                                    <span className="text-white font-medium">{course.rating}</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-1.5">
+                                                    <BookOpen className="w-4 h-4 text-brand-gold" />
+                                                    <span className="text-gray-400">{course.modules?.length || 0} Konu</span>
+                                                </div>
+                                            )}
                                             <div className="flex items-center gap-1.5">
                                                 <Users className="w-4 h-4" />
-                                                <span>{course.students}</span>
+                                                <span>{course.modules?.length || 0} Modül</span>
                                             </div>
                                         </div>
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useAuth } from "./AuthContext";
 import { doc, updateDoc, arrayUnion, arrayRemove, increment } from "firebase/firestore";
@@ -40,7 +40,14 @@ export function LibraryProvider({ children }) {
         }
     }, [savedCourses, xp, currentUser]);
 
-    const addXp = async (amount) => {
+    // Debounce timer refs
+    const progressTimerRef = useRef({});
+    const lastProgressRef = useRef({});
+
+    const addXp = useCallback(async (amount) => {
+        // Admin kullanıcılar XP kazanmamalı
+        if (userData?.role === 'admin') return;
+        
         setXp(prev => {
             const newXp = prev + amount;
             const oldLevel = Math.floor(prev / 500) + 1;
@@ -70,7 +77,7 @@ export function LibraryProvider({ children }) {
                 console.error("Error updating XP in Firestore:", error);
             }
         }
-    };
+    }, [currentUser, userData?.role]);
 
     const addToLibrary = async (course) => {
         if (!savedCourses.find(c => c.id === course.id)) {
@@ -133,8 +140,46 @@ export function LibraryProvider({ children }) {
         return savedCourses.some(c => c.id === courseId);
     };
 
+    const updateCourseProgress = useCallback((courseId, progress) => {
+        // Aynı değeri tekrar yazmayı engelleyelim (sonsuz döngü koruması)
+        if (lastProgressRef.current[courseId] === progress) return;
+        lastProgressRef.current[courseId] = progress;
+
+        setSavedCourses(prev => {
+            const updated = prev.map(c => 
+                c.id === courseId ? { ...c, progress } : c
+            );
+            return updated;
+        });
+
+        // Debounced Firestore yazma - 2 saniye bekle, arka arkaya gelen yazmaları birleştir
+        if (currentUser) {
+            if (progressTimerRef.current[courseId]) {
+                clearTimeout(progressTimerRef.current[courseId]);
+            }
+            progressTimerRef.current[courseId] = setTimeout(async () => {
+                try {
+                    const userRef = doc(db, "users", currentUser.uid);
+                    // En güncel savedCourses'u doğrudan Firestore'a yaz
+                    setSavedCourses(currentList => {
+                        const firestoreData = currentList.map(c => {
+                            const { image, coverImage, ...rest } = c;
+                            return rest;
+                        });
+                        updateDoc(userRef, { enrolledCourses: firestoreData }).catch(err => 
+                            console.error("Error updating progress in Firestore:", err)
+                        );
+                        return currentList; // state değiştirme
+                    });
+                } catch (error) {
+                    console.error("Error updating course progress in Firestore:", error);
+                }
+            }, 2000);
+        }
+    }, [currentUser]);
+
     return (
-        <LibraryContext.Provider value={{ savedCourses, addToLibrary, removeFromLibrary, isCourseInLibrary, xp, addXp }}>
+        <LibraryContext.Provider value={{ savedCourses, addToLibrary, removeFromLibrary, isCourseInLibrary, xp, addXp, updateCourseProgress }}>
             {children}
         </LibraryContext.Provider>
     );

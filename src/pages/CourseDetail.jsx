@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from 'react-helmet-async';
 import { useParams, Link } from "react-router-dom";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../config/firebase";
 
-import { Play, FileText, CheckCircle2, ChevronRight, Star, Clock, Users, BookOpen } from "lucide-react";
+import { FileText, CheckCircle2, ChevronRight, Star, Clock, Users, BookOpen, Headphones, Presentation } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { useLibrary } from "../context/LibraryContext";
 import { useCourses } from "../context/CoursesContext";
@@ -15,11 +17,49 @@ export function CourseDetail() {
     const course = courses.find(c => c.id === courseId) || null;
     const loading = contextLoading;
 
-    const [activeTab, setActiveTab] = useState("mufredat");
     const { addToLibrary, isCourseInLibrary } = useLibrary();
+
+    // Dinamik öğrenci sayısı (admin hariç)
+    const [studentCount, setStudentCount] = useState(0);
+
+    useEffect(() => {
+        if (!courseId) return;
+        const fetchStudentCount = async () => {
+            try {
+                const usersRef = collection(db, "users");
+                const snapshot = await getDocs(usersRef);
+                let count = 0;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Admin kullanıcıları sayma
+                    if (data.role === 'admin') return;
+                    // enrolledCourses array'inde bu ders var mı kontrol et
+                    if (data.enrolledCourses && Array.isArray(data.enrolledCourses)) {
+                        const isEnrolled = data.enrolledCourses.some(c => c.id === courseId);
+                        if (isEnrolled) count++;
+                    }
+                });
+                setStudentCount(count);
+            } catch (error) {
+                console.error("Öğrenci sayısı alınamadı:", error);
+            }
+        };
+        fetchStudentCount();
+    }, [courseId]);
 
     // Dinamik Müfredat
     const modules = course?.modules || [];
+
+    // Materyal sayılarını hesapla
+    const materialCounts = modules.reduce((acc, mod) => {
+        if (mod.pdfUrl) acc.pdf++;
+        if (mod.slideUrl) acc.slide++;
+        if (mod.audioUrl) acc.audio++;
+        if (mod.questions && mod.questions.length > 0) acc.test++;
+        return acc;
+    }, { pdf: 0, slide: 0, audio: 0, test: 0 });
+
+    const totalMaterials = materialCounts.pdf + materialCounts.slide + materialCounts.audio + materialCounts.test;
 
     if (loading) {
         return (
@@ -41,7 +81,7 @@ export function CourseDetail() {
         <div className="pt-24 pb-20 min-h-screen">
             <Helmet>
                 <title>{course.title} - Dijital Akademi</title>
-                <meta name="description" content={`Dijital Akademi'de ${course.title} dersini ücretsiz olarak inceleyin ve hemen öğrenmeye başlayın. Eğitmen: ${course.instructor}`} />
+                <meta name="description" content={`Dijital Akademi'de ${course.title} dersini ücretsiz olarak inceleyin ve hemen öğrenmeye başlayın.`} />
             </Helmet>
             {/* Header Hero Area */}
             <div className="relative bg-[#1A1A1A] py-16 md:py-24 border-b border-white/5">
@@ -56,43 +96,36 @@ export function CourseDetail() {
                             <span className="bg-brand-gold/10 border border-brand-gold/30 text-brand-gold px-3 py-1 rounded-full text-sm font-semibold">
                                 {course.category}
                             </span>
-                            {course.tags.map(tag => (
+                            {course.tags && course.tags.map(tag => (
                                 <span key={tag} className="bg-white/5 border border-white/10 text-gray-300 px-3 py-1 rounded-full text-sm">
                                     {tag}
                                 </span>
                             ))}
                         </div>
 
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 leading-tight">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight">
                             {course.title}
                         </h1>
 
+                        {/* Düzenlenebilir Alt Yazı (subtitle) */}
                         <p className="text-gray-400 text-lg md:text-xl mb-8 leading-relaxed max-w-2xl">
-                            Bu program, {course.title.toLowerCase()} alanındaki en kritik başlıkları derinlemesine işlemenizi sağlayan tamamen interaktif bir öğrenme deneyimidir.
+                            {course.subtitle || course.description || `${course.title} alanındaki temel konuları kapsayan kapsamlı bir eğitim programı.`}
                         </p>
 
-                        <div className="flex flex-wrap items-center gap-6 text-gray-300 text-sm md:text-base font-medium mb-10">
-                            <div className="flex items-center gap-2">
-                                <Star className="w-5 h-5 text-brand-gold fill-brand-gold" />
-                                <span><strong className="text-white">{course.rating}</strong> Değerlendirme</span>
-                            </div>
+                        <div className="flex flex-wrap items-center gap-6 text-gray-300 text-sm md:text-base font-medium">
+                            {(course.rating > 0) && (
+                                <div className="flex items-center gap-2">
+                                    <Star className="w-5 h-5 text-brand-gold fill-brand-gold" />
+                                    <span><strong className="text-white">{course.rating}</strong> Değerlendirme</span>
+                                </div>
+                            )}
                             <div className="flex items-center gap-2">
                                 <Users className="w-5 h-5" />
-                                <span><strong className="text-white">{course.students}</strong>+ Öğrenci</span>
+                                <span><strong className="text-white">{studentCount}</strong> Öğrenci</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Clock className="w-5 h-5" />
-                                <span>Son Güncelleme: <strong>Mart 2026</strong></span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full border border-brand-gold p-0.5 overflow-hidden">
-                                <img src={`https://ui-avatars.com/api/?name=${course.instructor.split(" ")[1]}&background=FBBF24&color=000`} alt={course.instructor} className="w-full h-full rounded-full" />
-                            </div>
-                            <div>
-                                <div className="text-white font-bold">{course.instructor}</div>
-                                <div className="text-gray-500 text-sm">Alanında Uzman Eğitmen</div>
+                                <span>Son Güncelleme: <strong>{course.updatedAt ? new Date(course.updatedAt).toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' }) : 'Bilinmiyor'}</strong></span>
                             </div>
                         </div>
                     </div>
@@ -105,100 +138,60 @@ export function CourseDetail() {
 
                     {/* Left Details */}
                     <div className="lg:col-span-2">
-                        {/* Tabs */}
-                        <div className="flex space-x-8 border-b border-white/10 mb-8 overflow-x-auto scrollbar-hide">
-                            {["mufredat", "aciklama", "egitmen"].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`pb-4 text-lg font-medium transition-colors whitespace-nowrap relative ${activeTab === tab ? "text-brand-gold" : "text-gray-400 hover:text-white"
-                                        }`}
-                                >
-                                    {tab === "mufredat" ? "Müfredat" : tab === "aciklama" ? "Ders Tanıtımı" : "Eğitmen"}
-                                    {activeTab === tab && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-brand-gold rounded-t-lg" />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Ne Öğreneceksiniz Box */}
-                        <div className="bg-[#1A1A1A] border border-white/5 rounded-2xl p-6 md:p-8 mb-10">
-                            <h3 className="text-2xl font-bold text-white mb-6">Bu Derste Neler Öğreneceksiniz?</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {[
-                                    "Temel kavramları ve tarihsel arka planı analitik bir şekilde yorumlama",
-                                    "Klasik metinleri güvenilir kaynaklarla beraber analiz edebilme",
-                                    "Günümüz problemleri ile geleneksel anlayış arasında köprü kurma",
-                                    "Alana özgü literatür taraması yapıp metodolojiyi kavrama"
-                                ].map((item, i) => (
-                                    <div key={i} className="flex gap-3 text-gray-300">
-                                        <CheckCircle2 className="w-6 h-6 text-brand-gold flex-shrink-0" />
-                                        <span>{item}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Switchable Content Area */}
-                        <div>
-                            {activeTab === "mufredat" && (
-                                <div className="space-y-4">
-                                    <h3 className="text-2xl font-bold text-white mb-6">Ders Müfredatı</h3>
-                                    <div className="text-gray-400 mb-4 flex gap-4">
-                                        <span>{modules.length} Konu</span>
-                                        <span>•</span>
-                                        <span>1 Sınav Testi</span>
-                                    </div>
-                                    {modules.length === 0 ? (
-                                        <div className="text-gray-500 py-8 text-center border-dashed border border-white/10 rounded-xl">
-                                            Bu ders için henüz müfredat oluşturulmamış.
+                        {/* Özelleştirilebilir "Ne Öğreneceksiniz" Box */}
+                        {course.learningOutcomes && course.learningOutcomes.length > 0 && (
+                            <div className="bg-[#1A1A1A] border border-white/5 rounded-2xl p-6 md:p-8 mb-10">
+                                <h3 className="text-2xl font-bold text-white mb-6">Bu Derste Neler Öğreneceksiniz?</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {course.learningOutcomes.map((item, i) => (
+                                        <div key={i} className="flex gap-3 text-gray-300">
+                                            <CheckCircle2 className="w-6 h-6 text-brand-gold flex-shrink-0" />
+                                            <span>{item}</span>
                                         </div>
-                                    ) : (
-                                        modules.map((module, index) => (
-                                            <div key={module.id || `mod-${index}`} className="bg-[#1A1A1A] border border-white/5 rounded-xl overflow-hidden">
-                                                <div className="flex items-center justify-between p-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-10 h-10 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold font-bold shrink-0">
-                                                            {index + 1}
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="text-white font-bold text-lg">{module.title}</h4>
-                                                            <p className="text-gray-500 text-sm">{module.duration || "Video Eğitimi"}</p>
-                                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Müfredat - Artık tek tab, tab sistemi kaldırıldı */}
+                        <div className="space-y-4">
+                            <h3 className="text-2xl font-bold text-white mb-6">Ders Müfredatı</h3>
+                            <div className="text-gray-400 mb-4 flex gap-4">
+                                <span>{modules.length} Konu</span>
+                                {materialCounts.test > 0 && (
+                                    <>
+                                        <span>•</span>
+                                        <span>{materialCounts.test} Test</span>
+                                    </>
+                                )}
+                            </div>
+                            {modules.length === 0 ? (
+                                <div className="text-gray-500 py-8 text-center border-dashed border border-white/10 rounded-xl">
+                                    Bu ders için henüz müfredat oluşturulmamış.
+                                </div>
+                            ) : (
+                                modules.map((module, index) => (
+                                    <div key={module.id || `mod-${index}`} className="bg-[#1A1A1A] border border-white/5 rounded-xl overflow-hidden">
+                                        <div className="flex items-center justify-between p-6">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold font-bold shrink-0">
+                                                    {index + 1}
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-white font-bold text-lg">{module.title}</h4>
+                                                    {/* Modül materyallerini göster */}
+                                                    <div className="flex gap-3 mt-1">
+                                                        {module.pdfUrl && <span className="text-red-400 text-xs flex items-center gap-1"><FileText className="w-3 h-3" /> PDF</span>}
+                                                        {module.slideUrl && <span className="text-blue-400 text-xs flex items-center gap-1"><Presentation className="w-3 h-3" /> Slayt</span>}
+                                                        {module.audioUrl && <span className="text-purple-400 text-xs flex items-center gap-1"><Headphones className="w-3 h-3" /> Ses</span>}
+                                                        {module.questions && module.questions.length > 0 && <span className="text-brand-gold text-xs flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Test</span>}
                                                     </div>
-                                                    <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
                                                 </div>
                                             </div>
-                                        ))
-                                    )}
-                                </div>
-                            )}
-
-                            {activeTab === "aciklama" && (
-                                <div className="text-gray-300 leading-loose space-y-6">
-                                    <h3 className="text-2xl font-bold text-white mb-4">Detaylı Tanıtım</h3>
-                                    <p>Bu eğitim programı, alanı daha önce araştırma fırsatı bulamamış başlangıç düzeyindeki öğrenciler kadar, bilgilerini pekiştirmek isteyen ileri seviyedeki araştırmacılar için de uygundur.</p>
-                                    <p>Ders içerisinde sunulan tüm klasik kaynak analizleri ve yan materyaller (PDF'ler, sunum notları) interaktif bir şekilde Dijital Akademi panelinde sizlere sunulacaktır.</p>
-                                </div>
-                            )}
-
-                            {activeTab === "egitmen" && (
-                                <div className="text-gray-300 leading-loose space-y-6">
-                                    <h3 className="text-2xl font-bold text-white mb-4">Eğitmen Hakkında</h3>
-                                    <div className="flex items-start gap-6 border-b border-white/10 pb-6 mb-6">
-                                        <img src={`https://ui-avatars.com/api/?name=${course.instructor.split(" ")[1]}&background=FBBF24&color=000&size=120`} alt={course.instructor} className="w-24 h-24 rounded-2xl" />
-                                        <div>
-                                            <h4 className="text-xl font-bold text-white">{course.instructor}</h4>
-                                            <p className="text-brand-gold mb-2">Akademisyen & Yazar</p>
-                                            <div className="flex gap-4 text-sm text-gray-400">
-                                                <span className="flex items-center gap-1"><BookOpen className="w-4 h-4" /> 12 Kurs</span>
-                                                <span className="flex items-center gap-1"><Users className="w-4 h-4" /> 15K+ Öğrenci</span>
-                                            </div>
+                                            <ChevronRight className="w-5 h-5 text-gray-500 shrink-0" />
                                         </div>
                                     </div>
-                                    <p>Yılların verdiği akademik deneyimi dijital ortama taşıyan eğitmenimiz, konuları en anlaşılır ve kalıcı haliyle öğrencilerine aktarmayı hedeflemektedir.</p>
-                                </div>
+                                ))
                             )}
                         </div>
                     </div>
@@ -206,22 +199,9 @@ export function CourseDetail() {
                     {/* Right Sidebar - Sticky Enroll Card */}
                     <div className="lg:col-span-1">
                         <div className="sticky top-32 bg-[#1A1A1A] border border-white/10 rounded-2xl p-6 shadow-2xl">
-                            <div className="aspect-video bg-black rounded-lg mb-6 relative overflow-hidden group cursor-pointer border border-white/5">
-                                <img src={course.image} alt="Preview" className="w-full h-full object-cover opacity-60 group-hover:opacity-50 transition-opacity" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
-                                        <Play className="w-8 h-8 text-white ml-1" />
-                                    </div>
-                                </div>
-                                <div className="absolute bottom-4 left-0 right-0 text-center text-white font-medium text-sm">
-                                    Önizlemeyi İzle
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="bg-green-500/10 text-green-400 px-4 py-2 rounded-xl font-bold border border-green-500/20 w-fit">
-                                    %100 Ücretsiz Eğitim
-                                </div>
+                            {/* Ders Resmi (video yerine) */}
+                            <div className="aspect-video bg-black rounded-lg mb-6 relative overflow-hidden border border-white/5">
+                                <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
                             </div>
 
                             <Link to={`/learn/${course.id}`}>
@@ -242,21 +222,40 @@ export function CourseDetail() {
                                 ) : "Kütüphaneme Ekle"}
                             </Button>
 
-                            <div className="space-y-4 pt-6 border-t border-white/5">
-                                <h4 className="font-bold text-white mb-2">Bu Eğitimin Sundukları:</h4>
-                                <div className="flex items-center gap-3 text-gray-400">
-                                    <BookOpen className="w-5 h-5 text-brand-gold" />
-                                    <span>24 Saat Yüksek Çözünürlüklü VOD</span>
+                            {/* Dinamik "Bu Eğitimin Sundukları" */}
+                            {totalMaterials > 0 && (
+                                <div className="space-y-4 pt-6 border-t border-white/5">
+                                    <h4 className="font-bold text-white mb-2">Bu Eğitimin Sundukları:</h4>
+                                    {materialCounts.pdf > 0 && (
+                                        <div className="flex items-center gap-3 text-gray-400">
+                                            <FileText className="w-5 h-5 text-red-400" />
+                                            <span>{materialCounts.pdf} Adet PDF Kaynak</span>
+                                        </div>
+                                    )}
+                                    {materialCounts.slide > 0 && (
+                                        <div className="flex items-center gap-3 text-gray-400">
+                                            <Presentation className="w-5 h-5 text-blue-400" />
+                                            <span>{materialCounts.slide} Adet Slayt Sunumu</span>
+                                        </div>
+                                    )}
+                                    {materialCounts.audio > 0 && (
+                                        <div className="flex items-center gap-3 text-gray-400">
+                                            <Headphones className="w-5 h-5 text-purple-400" />
+                                            <span>{materialCounts.audio} Adet Sesli Özet</span>
+                                        </div>
+                                    )}
+                                    {materialCounts.test > 0 && (
+                                        <div className="flex items-center gap-3 text-gray-400">
+                                            <CheckCircle2 className="w-5 h-5 text-brand-gold" />
+                                            <span>{materialCounts.test} Adet Modül Testi</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-3 text-gray-400">
+                                        <BookOpen className="w-5 h-5 text-brand-gold" />
+                                        <span>{modules.length} Konu / Modül</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-3 text-gray-400">
-                                    <FileText className="w-5 h-5 text-brand-gold" />
-                                    <span>12 Adet Ek Ek Kaynak / PDF</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-gray-400">
-                                    <CheckCircle2 className="w-5 h-5 text-brand-gold" />
-                                    <span>İnteraktif Modül Sınavları</span>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
 

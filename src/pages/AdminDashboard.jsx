@@ -6,7 +6,7 @@ import { courses as coursesData } from "../data/coursesData";
 import { toast } from "sonner";
 import { Button } from "../components/ui/Button";
 
-import { Plus, Database, LayoutDashboard, LayoutList, Trash2, Edit, BookOpen, Users, Trophy, HelpCircle, X as XIcon } from "lucide-react";
+import { Plus, Database, LayoutDashboard, LayoutList, Trash2, Edit, BookOpen, Users, Trophy, HelpCircle, X as XIcon, ChevronDown } from "lucide-react";
 
 export function AdminDashboard() {
     const { userData } = useAuth();
@@ -47,10 +47,12 @@ export function AdminDashboard() {
     // Form states
     const [formData, setFormData] = useState({
         title: "",
-        description: "",
+        subtitle: "",
         category: "Temel İslam Bilimleri",
         coverImage: "",
+        learningOutcomes: ["", "", "", ""],
     });
+    const [editingModuleIndex, setEditingModuleIndex] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -99,7 +101,7 @@ export function AdminDashboard() {
     const handleAddCourse = async (e) => {
         e.preventDefault();
         
-        if (!formData.title || !formData.description || !formData.category) {
+        if (!formData.title || !formData.subtitle || !formData.category) {
             toast.error("Lütfen zorunlu alanları doldurun.");
             return;
         }
@@ -110,12 +112,12 @@ export function AdminDashboard() {
             const newCourse = {
                 ...formData,
                 id: courseId,
+                description: formData.subtitle,
                 rating: 0,
                 students: 0,
                 price: 0,
-                level: "Tüm Seviyeler",
-                instructor: userData?.name || "Eğitmen Akademi",
                 tags: [],
+                learningOutcomes: formData.learningOutcomes.filter(o => o.trim() !== ""),
                 modules: [
                     {
                         title: "Giriş ve Kurulum",
@@ -126,7 +128,9 @@ export function AdminDashboard() {
                         audioUrl: "",
                         questions: []
                     }
-                ]
+                ],
+                updatedAt: new Date().toISOString(),
+                createdAt: new Date().toISOString()
             };
 
             // Firestore'a göndermeden önce tüm veriyi saf JSON objesine dönüştür
@@ -139,9 +143,10 @@ export function AdminDashboard() {
             
             setFormData({
                 title: "",
-                description: "",
+                subtitle: "",
                 category: "Temel İslam Bilimleri",
                 coverImage: "",
+                learningOutcomes: ["", "", "", ""],
             });
             
             fetchDashboardData(); // Refresh list
@@ -175,7 +180,7 @@ export function AdminDashboard() {
 
     const handleUpdateCourse = async (e) => {
         if (e) e.preventDefault();
-        if (!editingCourse.title || !editingCourse.description || !editingCourse.category) {
+        if (!editingCourse.title || !editingCourse.category) {
             toast.error("Lütfen zorunlu alanları doldurun.");
             return;
         }
@@ -186,6 +191,8 @@ export function AdminDashboard() {
             const { id, ...courseDataToSave } = editingCourse;
             // undefined, fonksiyon vb. serileştirilemez değerleri temizle
             const cleanData = JSON.parse(JSON.stringify(courseDataToSave));
+            // Güncelleme tarihini ekle
+            cleanData.updatedAt = new Date().toISOString();
             // Modüller içindeki boş string alanları da temizle (Firestore uyumu)
             if (cleanData.modules) {
                 cleanData.modules = cleanData.modules.map(m => ({
@@ -414,7 +421,6 @@ export function AdminDashboard() {
                                                             <tr>
                                                                 <th className="p-4 text-sm font-medium text-gray-400">Ders Adı</th>
                                                                 <th className="p-4 text-sm font-medium text-gray-400">Kategori</th>
-                                                                <th className="p-4 text-sm font-medium text-gray-400">Seviye</th>
                                                                 <th className="p-4 text-sm font-medium text-gray-400 text-right">İşlemler</th>
                                                             </tr>
                                                         </thead>
@@ -423,7 +429,6 @@ export function AdminDashboard() {
                                                                 <tr key={course.id} className="hover:bg-white/[0.02] transition-colors">
                                                                     <td className="p-4 text-white font-medium">{course.title}</td>
                                                                     <td className="p-4 text-brand-gold">{course.category}</td>
-                                                                    <td className="p-4 text-gray-400">{course.level}</td>
                                                                     <td className="p-4 text-right">
                                                                         <div className="flex items-center justify-end gap-2">
                                                                             <button 
@@ -481,14 +486,14 @@ export function AdminDashboard() {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-300">Açıklama *</label>
+                                                <label className="text-sm font-medium text-gray-300">Ders Açıklaması *</label>
                                                 <textarea 
-                                                    name="description"
-                                                    value={formData.description}
+                                                    name="subtitle"
+                                                    value={formData.subtitle}
                                                     onChange={handleInputChange}
                                                     rows="4"
                                                     className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors resize-none"
-                                                    placeholder="Ders hakkında detaylı bir açıklama girin..."
+                                                    placeholder="Ders hakkında açıklama girin... (Ders sayfasında başlık altında görünecektir)"
                                                     required
                                                 />
                                             </div>
@@ -520,6 +525,40 @@ export function AdminDashboard() {
                                                     className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
                                                     placeholder="https://..."
                                                 />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium text-gray-300">Bu Derste Neler Öğreneceksiniz? (Maddeler)</label>
+                                                {formData.learningOutcomes.map((outcome, idx) => (
+                                                    <div key={idx} className="flex items-center gap-2 mb-2">
+                                                        <input 
+                                                            type="text" 
+                                                            value={outcome}
+                                                            onChange={(e) => {
+                                                                const newOutcomes = [...formData.learningOutcomes];
+                                                                newOutcomes[idx] = e.target.value;
+                                                                setFormData(prev => ({ ...prev, learningOutcomes: newOutcomes }));
+                                                            }}
+                                                            className="flex-1 bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                            placeholder={`Madde ${idx + 1}...`}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setFormData(prev => ({ ...prev, learningOutcomes: prev.learningOutcomes.filter((_, i) => i !== idx) }))}
+                                                            className="text-red-500 hover:bg-red-500/10 p-2 rounded shrink-0 transition-colors"
+                                                            title="Maddeyi sil"
+                                                        >
+                                                            <XIcon size={16} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, learningOutcomes: [...prev.learningOutcomes, ""] }))}
+                                                    className="text-brand-gold text-sm hover:underline"
+                                                >
+                                                    + Yeni madde ekle
+                                                </button>
                                             </div>
 
                                             <div className="pt-4 border-t border-white/5">
@@ -592,14 +631,48 @@ export function AdminDashboard() {
                                                         />
                                                     </div>
                                                     <div className="space-y-2 md:col-span-2">
-                                                        <label className="text-sm font-medium text-gray-300">Açıklama</label>
+                                                        <label className="text-sm font-medium text-gray-300">Ders Açıklaması</label>
                                                         <textarea 
-                                                            name="description"
-                                                            value={editingCourse.description}
+                                                            name="subtitle"
+                                                            value={editingCourse.subtitle || editingCourse.description || ""}
                                                             onChange={handleEditCourseChange}
                                                             rows="3"
                                                             className="w-full bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors resize-none"
+                                                            placeholder="Ders sayfasında başlık altında görünecek açıklama..."
                                                         />
+                                                    </div>
+                                                    <div className="space-y-2 md:col-span-2">
+                                                        <label className="text-sm font-medium text-gray-300">Bu Derste Neler Öğreneceksiniz? (Maddeler)</label>
+                                                        {(editingCourse.learningOutcomes || []).map((outcome, idx) => (
+                                                            <div key={idx} className="flex items-center gap-2 mb-2">
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={outcome}
+                                                                    onChange={(e) => {
+                                                                        const newOutcomes = [...(editingCourse.learningOutcomes || [])];
+                                                                        newOutcomes[idx] = e.target.value;
+                                                                        setEditingCourse(prev => ({ ...prev, learningOutcomes: newOutcomes }));
+                                                                    }}
+                                                                    className="flex-1 bg-[#222] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-gold transition-colors"
+                                                                    placeholder={`Madde ${idx + 1}...`}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setEditingCourse(prev => ({ ...prev, learningOutcomes: (prev.learningOutcomes || []).filter((_, i) => i !== idx) }))}
+                                                                    className="text-red-500 hover:bg-red-500/10 p-2 rounded shrink-0 transition-colors"
+                                                                    title="Maddeyi sil"
+                                                                >
+                                                                    <XIcon size={16} />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setEditingCourse(prev => ({ ...prev, learningOutcomes: [...(prev.learningOutcomes || []), ""] }))}
+                                                            className="text-brand-gold text-sm hover:underline"
+                                                        >
+                                                            + Yeni madde ekle
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -613,33 +686,156 @@ export function AdminDashboard() {
                                                     Ders Konuları (Müfredat)
                                                 </h2>
                                                 
-                                                {/* Mevcut Modüller */}
+                                                {/* Mevcut Modüller - Düzenlenebilir */}
                                                 <div className="space-y-3 mb-6">
                                                     {(editingCourse.modules || []).length === 0 ? (
                                                         <p className="text-gray-400 text-sm">Hiç konu eklenmemiş.</p>
                                                     ) : (
                                                         editingCourse.modules.map((mod, idx) => (
-                                                            <div key={idx} className="bg-[#222] p-4 rounded-xl border border-white/5 flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-                                                                <div className="flex-1">
-                                                                    <h4 className="font-bold text-white text-lg">{idx + 1}. {mod.title}</h4>
-                                                                    <p className="text-sm text-gray-400 mt-1 line-clamp-2">{mod.description}</p>
-                                                                    <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500 bg-[#1A1A1A] p-2 rounded-lg inline-flex">
-                                                                        {mod.imageUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Resim</span>}
-                                                                        {mod.pdfUrl && <span className="text-brand-gold pr-2 border-r border-white/10">PDF</span>}
-                                                                        {mod.slideUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Slayt</span>}
-                                                                        {mod.audioUrl && <span className="text-brand-gold pr-2 border-r border-white/10">Ses</span>}
-                                                                        {(mod.questions && mod.questions.length > 0) && <span className="text-brand-gold">{mod.questions.length} Soru</span>}
-                                                                        {!(mod.imageUrl || mod.pdfUrl || mod.slideUrl || mod.audioUrl || (mod.questions && mod.questions.length > 0)) && <span>İçerik yok</span>}
+                                                            <div key={idx} className={`bg-[#222] rounded-xl border transition-colors ${editingModuleIndex === idx ? 'border-brand-gold/40' : 'border-white/5'}`}>
+                                                                {/* Modül Başlık Satırı */}
+                                                                <div className="p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                                                                    <div className="flex-1 cursor-pointer" onClick={() => setEditingModuleIndex(editingModuleIndex === idx ? null : idx)}>
+                                                                        <h4 className="font-bold text-white text-lg flex items-center gap-2">
+                                                                            {idx + 1}. {mod.title}
+                                                                            <ChevronDown size={16} className={`text-gray-500 transition-transform ${editingModuleIndex === idx ? 'rotate-180' : ''}`} />
+                                                                        </h4>
+                                                                        <div className="flex flex-wrap gap-3 mt-2 text-xs text-gray-500">
+                                                                            {mod.pdfUrl && <span className="text-brand-gold">PDF</span>}
+                                                                            {mod.slideUrl && <span className="text-brand-gold">Slayt</span>}
+                                                                            {mod.audioUrl && <span className="text-brand-gold">Ses</span>}
+                                                                            {(mod.questions && mod.questions.length > 0) && <span className="text-brand-gold">{mod.questions.length} Soru</span>}
+                                                                            {!(mod.pdfUrl || mod.slideUrl || mod.audioUrl || (mod.questions && mod.questions.length > 0)) && <span>İçerik yok</span>}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex gap-2 shrink-0 self-end sm:self-auto">
+                                                                        <button 
+                                                                            type="button"
+                                                                            onClick={() => setEditingModuleIndex(editingModuleIndex === idx ? null : idx)}
+                                                                            className="text-brand-gold hover:bg-brand-gold/10 p-2 rounded transition-colors"
+                                                                            title="Düzenle"
+                                                                        >
+                                                                            <Edit size={16} />
+                                                                        </button>
+                                                                        <button 
+                                                                            type="button"
+                                                                            onClick={() => handleDeleteModule(idx)} 
+                                                                            className="text-red-500 hover:bg-red-500/10 p-2 rounded transition-colors"
+                                                                            title="Konuyu Sil"
+                                                                        >
+                                                                            <Trash2 size={16} />
+                                                                        </button>
                                                                     </div>
                                                                 </div>
-                                                                <button 
-                                                                    type="button"
-                                                                    onClick={() => handleDeleteModule(idx)} 
-                                                                    className="text-red-500 hover:bg-red-500/10 p-2 rounded shrink-0 self-end sm:self-auto transition-colors"
-                                                                    title="Konuyu Sil"
-                                                                >
-                                                                    <Trash2 size={18} />
-                                                                </button>
+
+                                                                {/* Genişletilebilir Düzenleme Paneli */}
+                                                                {editingModuleIndex === idx && (
+                                                                    <div className="border-t border-white/5 p-4 space-y-4 bg-[#1A1A1A] rounded-b-xl">
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                                            <div>
+                                                                                <label className="text-xs text-gray-500 mb-1 block">Konu Başlığı</label>
+                                                                                <input type="text" value={mod.title} onChange={(e) => {
+                                                                                    const newMods = [...editingCourse.modules];
+                                                                                    newMods[idx] = { ...newMods[idx], title: e.target.value };
+                                                                                    setEditingCourse(prev => ({ ...prev, modules: newMods }));
+                                                                                }} className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <label className="text-xs text-gray-500 mb-1 block">Ders Resmi URL</label>
+                                                                                <input type="url" value={mod.imageUrl || ''} onChange={(e) => {
+                                                                                    const newMods = [...editingCourse.modules];
+                                                                                    newMods[idx] = { ...newMods[idx], imageUrl: e.target.value };
+                                                                                    setEditingCourse(prev => ({ ...prev, modules: newMods }));
+                                                                                }} className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                                            <div>
+                                                                                <label className="text-xs text-gray-500 mb-1 block">PDF Linki</label>
+                                                                                <input type="url" value={mod.pdfUrl || ''} onChange={(e) => {
+                                                                                    const newMods = [...editingCourse.modules];
+                                                                                    newMods[idx] = { ...newMods[idx], pdfUrl: e.target.value };
+                                                                                    setEditingCourse(prev => ({ ...prev, modules: newMods }));
+                                                                                }} className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <label className="text-xs text-gray-500 mb-1 block">Slayt Linki</label>
+                                                                                <input type="url" value={mod.slideUrl || ''} onChange={(e) => {
+                                                                                    const newMods = [...editingCourse.modules];
+                                                                                    newMods[idx] = { ...newMods[idx], slideUrl: e.target.value };
+                                                                                    setEditingCourse(prev => ({ ...prev, modules: newMods }));
+                                                                                }} className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors" />
+                                                                            </div>
+                                                                            <div>
+                                                                                <label className="text-xs text-gray-500 mb-1 block">Ses Bağlantısı</label>
+                                                                                <input type="url" value={mod.audioUrl || ''} onChange={(e) => {
+                                                                                    const newMods = [...editingCourse.modules];
+                                                                                    newMods[idx] = { ...newMods[idx], audioUrl: e.target.value };
+                                                                                    setEditingCourse(prev => ({ ...prev, modules: newMods }));
+                                                                                }} className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors" />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div>
+                                                                            <label className="text-xs text-gray-500 mb-1 block">Konu Açıklaması</label>
+                                                                            <textarea value={mod.description || ''} onChange={(e) => {
+                                                                                const newMods = [...editingCourse.modules];
+                                                                                newMods[idx] = { ...newMods[idx], description: e.target.value };
+                                                                                setEditingCourse(prev => ({ ...prev, modules: newMods }));
+                                                                            }} rows="2" className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none resize-none transition-colors" />
+                                                                        </div>
+
+                                                                        {/* Mevcut Modül Soruları */}
+                                                                        <div className="border-t border-white/5 pt-3">
+                                                                            <h5 className="text-sm font-bold text-brand-gold mb-2 flex items-center gap-2">
+                                                                                <HelpCircle size={14} /> Modül Soruları ({(mod.questions || []).length})
+                                                                            </h5>
+                                                                            {(mod.questions || []).map((q, qi) => (
+                                                                                <div key={qi} className="bg-[#222] p-3 rounded-lg border border-white/5 mb-2 flex justify-between items-start">
+                                                                                    <div>
+                                                                                        <p className="text-sm text-white font-medium">S{qi + 1}: {q.text}</p>
+                                                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                                                            {(q.options || []).map((opt, oi) => (
+                                                                                                <span key={oi} className={`text-xs px-2 py-0.5 rounded ${oi === q.correctAnswer ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-500'}`}>
+                                                                                                    {String.fromCharCode(65 + oi)}) {opt}
+                                                                                                </span>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <button type="button" onClick={() => handleDeleteQuestion(idx, qi)} className="text-red-500 hover:bg-red-500/10 p-1 rounded shrink-0">
+                                                                                        <XIcon size={14} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            ))}
+
+                                                                            {/* Bu modüle soru ekleme */}
+                                                                            <div className="bg-[#1A1A1A] border border-white/5 p-3 rounded-lg space-y-2 mt-2">
+                                                                                <input type="text" placeholder="Soru metni *" value={questionForm.text}
+                                                                                    onChange={(e) => setQuestionForm({ ...questionForm, text: e.target.value })}
+                                                                                    className="w-full bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors" />
+                                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                                    {questionForm.options.map((opt, oi) => (
+                                                                                        <div key={oi} className="flex items-center gap-2">
+                                                                                            <input type="radio" name={`existingModuleCorrect-${idx}`} checked={questionForm.correctAnswer === oi}
+                                                                                                onChange={() => setQuestionForm({ ...questionForm, correctAnswer: oi })}
+                                                                                                className="accent-brand-gold shrink-0" />
+                                                                                            <input type="text" placeholder={`${String.fromCharCode(65 + oi)} Şıkkı *`} value={opt}
+                                                                                                onChange={(e) => {
+                                                                                                    const newOpts = [...questionForm.options];
+                                                                                                    newOpts[oi] = e.target.value;
+                                                                                                    setQuestionForm({ ...questionForm, options: newOpts });
+                                                                                                }}
+                                                                                                className="flex-1 bg-[#222] border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-brand-gold outline-none transition-colors" />
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                                <button type="button" onClick={() => handleAddQuestionToExistingModule(idx)}
+                                                                                    className="bg-brand-gold/10 text-brand-gold text-sm px-4 py-2 rounded-lg hover:bg-brand-gold/20 transition-colors">
+                                                                                    + Soruyu Bu Modüle Ekle
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         ))
                                                     )}
