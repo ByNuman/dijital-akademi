@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { categories } from "../../data/mockData";
 
 export function Categories() {
@@ -17,10 +18,10 @@ export function Categories() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
                     {categories.map((category) => (
-                        <a
-                            href="#"
+                        <Link
+                            to={`/courses?category=${encodeURIComponent(category.name)}`}
                             key={category.id}
                             className="glass-effect p-8 rounded-3xl flex flex-col items-center justify-center text-center group cursor-pointer border-white/5 hover:border-brand-gold/40 transition-all hover:-translate-y-1 gold-glow"
                         >
@@ -29,7 +30,7 @@ export function Categories() {
                             </div>
                             <h3 className="text-white font-bold mb-2 group-hover:text-brand-gold transition-colors">{category.name}</h3>
                             <p className="text-gray-500 font-medium text-sm">{category.count} Kurs</p>
-                        </a>
+                        </Link>
                     ))}
                 </div>
             </div>

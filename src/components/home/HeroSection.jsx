@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Play } from "lucide-react";
 
@@ -17,6 +18,7 @@ const dersler = [
 
 export function HeroSection() {
     const [currentDersIndex, setCurrentDersIndex] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -38,14 +40,7 @@ export function HeroSection() {
             <div className="container mx-auto px-6 md:px-12 relative z-10">
                 <div className="flex flex-col items-center justify-center text-center">
                     <div className="max-w-4xl w-full flex flex-col items-center">
-                        <div>
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-slate border border-brand-gold/20 text-brand-gold text-sm font-semibold mb-8">
-                                <span className="relative flex h-2.5 w-2.5">
-                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-brand-gold"></span>
-                                </span>
-                                Yeni Dönem Kayıtları Başladı
-                            </div>
-                        </div>
+
 
                         <div className="mb-8 w-full">
                             <h1
@@ -70,10 +65,10 @@ export function HeroSection() {
                         <div
                             className="flex flex-col sm:flex-row gap-5 justify-center items-center"
                         >
-                            <Button variant="primary" className="text-base px-8 py-4 !rounded-xl font-bold shadow-[0_5px_20px_rgba(251,191,36,0.3)] hover:shadow-[0_8px_30px_rgba(251,191,36,0.5)]">
+                            <Button onClick={() => navigate('/login')} variant="primary" className="text-base px-8 py-4 !rounded-xl font-bold shadow-[0_5px_20px_rgba(251,191,36,0.3)] hover:shadow-[0_8px_30px_rgba(251,191,36,0.5)]">
                                 Hemen Başla
                             </Button>
-                            <Button variant="outline" className="text-base px-8 py-4 !rounded-xl group flex items-center gap-3">
+                            <Button onClick={() => navigate('/courses')} variant="outline" className="text-base px-8 py-4 !rounded-xl group flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-brand-gold/10 flex items-center justify-center group-hover:bg-brand-gold transition-colors">
                                     <Play className="w-4 h-4 text-brand-gold group-hover:text-brand-black ml-0.5" />
                                 </div>

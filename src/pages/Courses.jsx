@@ -1,17 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Search, Filter, Star, Users, Clock, ArrowRight, BookOpen } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { useCourses } from "../context/CoursesContext";
 import { Helmet } from "react-helmet-async";
 
 export function Courses() {
     const { courses, loading } = useCourses();
+    const [searchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("Tümü");
 
-    const categories = ["Tümü", ...new Set(courses.map(c => c.category))];
+    useEffect(() => {
+        const categoryParam = searchParams.get("category");
+        if (categoryParam) {
+            setSelectedCategory(categoryParam);
+        }
+    }, [searchParams]);
+
+    const categories = [
+        "Tümü",
+        "Temel İslam Bilimleri",
+        "Felsefe ve Din Bilimleri",
+        "İslam Tarihi ve Sanatları",
+        "Dil Eğitimi",
+        "Eğitim Bilimleri / Pedagojik Formasyon"
+    ];
 
     const filteredCourses = courses.filter(course => {
         const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

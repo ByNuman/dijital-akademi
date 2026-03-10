@@ -1,6 +1,15 @@
 import { Button } from "../ui/Button";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export function FinalCTA() {
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
+
+    if (currentUser) {
+        return null;
+    }
+
     return (
         <section className="py-32 relative bg-[#101010] border-t border-white/5">
             <div className="absolute inset-0 z-0">
@@ -22,11 +31,12 @@ export function FinalCTA() {
                 <div
                     className="flex flex-col sm:flex-row justify-center gap-5"
                 >
-                    <Button variant="primary" className="text-base px-10 py-4 !rounded-xl font-bold shadow-[0_5px_20px_rgba(251,191,36,0.3)] hover:shadow-[0_8px_30px_rgba(251,191,36,0.5)]">
+                    <Button 
+                        variant="primary" 
+                        className="text-base px-10 py-4 !rounded-xl font-bold shadow-[0_5px_20px_rgba(251,191,36,0.3)] hover:shadow-[0_8px_30px_rgba(251,191,36,0.5)]"
+                        onClick={() => navigate('/register')}
+                    >
                         Hemen Kaydol
-                    </Button>
-                    <Button variant="outline" className="text-base px-10 py-4 !rounded-xl font-bold bg-brand-slate group">
-                        Detaylı Bilgi Al
                     </Button>
                 </div>
             </div>

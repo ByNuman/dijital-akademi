@@ -1,10 +1,8 @@
 import { Helmet } from 'react-helmet-async';
 import { HeroSection } from "../components/home/HeroSection";
-import { WhyAntigravity } from "../components/home/WhyAntigravity";
+import { RecentlyAdded } from "../components/home/RecentlyAdded";
 import { FeaturedCourses } from "../components/home/FeaturedCourses";
 import { Categories } from "../components/home/Categories";
-import { Testimonials } from "../components/home/Testimonials";
-import { FAQSection } from "../components/home/FAQSection";
 import { FinalCTA } from "../components/home/FinalCTA";
 
 export function HomePage() {
@@ -18,11 +16,9 @@ export function HomePage() {
                 <meta property="og:description" content="Tamamen ücretsiz, yüksek kaliteli İslami ilimler eğitim platformu." />
             </Helmet>
             <HeroSection />
-            <WhyAntigravity />
+            <RecentlyAdded />
             <FeaturedCourses />
             <Categories />
-            <Testimonials />
-            <FAQSection />
             <FinalCTA />
         </>
     );

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, Sparkles, Bell, User, BookOpen, Award, Settings, LogOut, Trophy, ShieldAlert } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Menu, X, Sparkles, Bell, User, BookOpen, Award, Settings, LogOut, Trophy, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { studentData } from "../../data/studentData";
 import { useAuth } from "../../context/AuthContext";
@@ -12,6 +12,7 @@ export function Navbar() {
     const dropdownRef = useRef(null);
     const { currentUser, userData, logoutUser } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = async () => {
         try {
@@ -63,10 +64,31 @@ export function Navbar() {
                 }`}
         >
             <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
-                {/* Logo */}
-                <Link to="/" className="flex items-center gap-3 cursor-pointer group">
-                    <img src="/logo.png" alt="Dijital Akademi Logo" className="h-16 md:h-20 w-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all duration-300 group-hover:drop-shadow-[0_0_25px_rgba(251,191,36,0.7)]" />
-                </Link>
+                <div className="flex items-center gap-2 md:gap-4">
+                    {/* Mobile Back Button */}
+                    {location.pathname !== '/' && (
+                        <button 
+                            onClick={() => navigate(-1)}
+                            className="md:hidden text-gray-400 hover:text-white p-1 -ml-2"
+                        >
+                            <ArrowLeft className="w-6 h-6" />
+                        </button>
+                    )}
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-4 cursor-pointer group">
+                        <div className="relative">
+                            <img 
+                                src="/logo.png" 
+                                alt="Dijital Akademi Logo" 
+                                className="h-14 md:h-16 w-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all duration-300 group-hover:drop-shadow-[0_0_25px_rgba(251,191,36,0.8)] group-hover:scale-105" 
+                            />
+                            <div className="absolute inset-0 bg-brand-gold/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
+                        <span className="text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-brand-gold to-brand-gold bg-clip-text text-transparent opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-300 origin-left">
+                            Dijital Akademi
+                        </span>
+                    </Link>
+                </div>
 
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center gap-8">

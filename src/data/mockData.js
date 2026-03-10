@@ -54,12 +54,11 @@ export const featuredCourses = [
 ];
 
 export const categories = [
-    { id: 1, name: "Temel İslami İlimler", icon: "📚", count: 45 },
-    { id: 2, name: "Din Bilimleri", icon: "🕌", count: 28 },
-    { id: 3, name: "Felsefe & Mantık", icon: "🧠", count: 32 },
+    { id: 1, name: "Temel İslam Bilimleri", icon: "📚", count: 45 },
+    { id: 2, name: "Felsefe ve Din bilimleri", icon: "🧠", count: 28 },
+    { id: 3, name: "İslam Tarihi ve Sanatları", icon: "🕌", count: 32 },
     { id: 4, name: "Dil Eğitimi", icon: "🌍", count: 18 },
-    { id: 5, name: "İslam Tarihi", icon: "⏳", count: 24 },
-    { id: 6, name: "Kişisel Gelişim", icon: "✨", count: 15 },
+    { id: 5, name: "Eğitim Bilimleri / Pedagojik Formasyon", icon: "🎓", count: 24 },
 ];
 
 export const testimonials = [

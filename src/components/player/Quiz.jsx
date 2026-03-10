@@ -158,7 +158,7 @@ export function Quiz({ onComplete, onQuit, questions: propQuestions }) {
                     <Button variant="outline" onClick={resetQuiz} className="gap-2">
                         <RotateCcw className="w-4 h-4" /> Tekrar Çöz
                     </Button>
-                    <Button variant="primary" onClick={onComplete} className="gap-2">
+                    <Button variant="primary" onClick={() => onComplete(finalScore, total)} className="gap-2">
                         <CheckCircle2 className="w-4 h-4" /> Eğitime Geri Dön
                     </Button>
                 </div>

@@ -1,7 +1,7 @@
 import { CourseCard } from "../ui/CourseCard";
 import { useCourses } from "../../context/CoursesContext";
 import { Button } from "../ui/Button";
-
+import { Link } from "react-router-dom";
 export function FeaturedCourses() {
     const { courses, loading } = useCourses();
     const featuredCourses = courses.slice(0, 3);
@@ -24,9 +24,11 @@ export function FeaturedCourses() {
                         </p>
                     </div>
                     <div>
-                        <Button variant="outline" className="hidden md:inline-flex rounded-xl font-semibold">
-                            Tüm Dersleri Gör
-                        </Button>
+                        <Link to="/courses">
+                            <Button variant="outline" className="hidden md:inline-flex rounded-xl font-semibold">
+                                Tüm Dersleri Gör
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 
@@ -45,9 +47,11 @@ export function FeaturedCourses() {
                 </div>
 
                 <div className="md:hidden flex justify-center mt-10">
-                    <Button variant="outline" className="w-full rounded-xl font-semibold">
-                        Tüm Dersleri Gör
-                    </Button>
+                    <Link to="/courses" className="w-full">
+                        <Button variant="outline" className="w-full rounded-xl font-semibold">
+                            Tüm Dersleri Gör
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </section>
