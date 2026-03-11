@@ -16,7 +16,18 @@ const Profile = React.lazy(() => import('./pages/Profile'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 const Community = React.lazy(() => import('./pages/Community'));
 const Blog = React.lazy(() => import('./pages/Blog'));
+const About = React.lazy(() => import('./pages/About'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+
+// Info Pages
+const { 
+  NasilKullanilir, 
+  KVKK, 
+  SSS, 
+  GizlilikPolitikasi, 
+  CerezPolitikasi, 
+  KullanimSartlari 
+} = await import('./pages/info/InfoPages');
 
 // Yükleme Animasyonu
 const PageLoader = () => (
@@ -34,10 +45,19 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/course/:id" element={<CourseDetail />} />
+            <Route path="/about" element={<About />} />
             <Route path="/community" element={<Community />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Info Pages */}
+            <Route path="/nasil-kullanilir" element={<NasilKullanilir />} />
+            <Route path="/kvkk" element={<KVKK />} />
+            <Route path="/sss" element={<SSS />} />
+            <Route path="/gizlilik-politikasi" element={<GizlilikPolitikasi />} />
+            <Route path="/cerez-politikasi" element={<CerezPolitikasi />} />
+            <Route path="/kullanim-sartlari" element={<KullanimSartlari />} />
 
             {/* Protected Routes inside MainLayout */}
             <Route element={<PrivateRoute />}>

@@ -12,8 +12,30 @@ export function RecentlyAdded() {
     const { courses, loading } = useCourses();
     const { isCourseInLibrary } = useLibrary();
     
-    // Tüm kurslardaki tüm modülleri düzleştir (flatMap) ve her modüle kurs bilgilerini ekle
-    const allModules = courses.flatMap(course => 
+    // Tüm kursları en yeni eklenene göre sırala (tarihe göre yoksa olduğu gibi tersine çevir)
+    const sortedCourses = [...courses].sort((a, b) => {
+        const getTimestamp = (c) => {
+            const dateStr = c.createdAt || c.created_at;
+            if (dateStr && dateStr.seconds) return dateStr.seconds * 1000;
+            if (dateStr && dateStr.toMillis) return dateStr.toMillis();
+            if (typeof dateStr === 'number') return dateStr;
+            if (typeof dateStr === 'string' || dateStr instanceof Date) return new Date(dateStr).getTime();
+            return 0;
+        };
+        const timeA = getTimestamp(a);
+        const timeB = getTimestamp(b);
+        if (timeA === 0 && timeB === 0) return 0; // Eğer hiçbiri yoksa orijinal sıracı bozma (sonradan reverse yapacağız)
+        return timeB - timeA;
+    });
+    
+    // Eğer tüm kurslarda tarih bilgisi yoksa (eski verilerse), varsayılan olarak son eklenenleri başa almak için ters çevir
+    const hasDates = courses.some(c => c.createdAt || c.created_at);
+    if (!hasDates) {
+        sortedCourses.reverse();
+    }
+
+    // Sıralanmış kurslardaki tüm modülleri düzleştir (flatMap) ve her modüle kurs bilgilerini ekle
+    const allModules = sortedCourses.flatMap(course => 
         (course.modules || []).map((mod, index) => ({
             ...mod,
             courseId: course.id,
@@ -24,8 +46,8 @@ export function RecentlyAdded() {
         }))
     );
 
-    // En son eklenen kursların modülleri sonda olabileceği için listeyi ters çevirip ilk 7'sini al
-    const recentModules = allModules.reverse().slice(0, 7);
+    // En son eklenen kursların modülleri en başta olduğu için ilk 7'sini al
+    const recentModules = allModules.slice(0, 7);
 
     return (
         <section className="py-24 bg-[#141414] relative border-y border-white/5" id="son-eklenenler">
@@ -67,7 +89,7 @@ export function RecentlyAdded() {
                                 768: { slidesPerView: 2 },
                                 1024: { slidesPerView: 3 },
                             }}
-                            className="pb-16 pt-4 px-4 -mx-4 !overflow-visible"
+                            className="pb-16 pt-4 px-2 sm:px-12 -mx-2 sm:-mx-12 !overflow-visible"
                         >
                             {recentModules.map((mod, index) => (
                                 <SwiperSlide key={mod.id || index} className="h-auto px-2">
@@ -153,24 +175,59 @@ export function RecentlyAdded() {
             <style dangerouslySetInnerHTML={{__html: `
                 .swiper-button-next, .swiper-button-prev {
                     color: #d4af37 !important;
-                    background: rgba(20, 20, 20, 0.8);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    width: 48px !important;
-                    height: 48px !important;
+                    background: rgba(20, 20, 20, 0.6);
+                    backdrop-filter: blur(8px);
+                    border: 1px solid rgba(212, 175, 55, 0.2);
+                    width: 52px !important;
+                    height: 52px !important;
                     border-radius: 50%;
-                    transform: scale(0.8);
-                    transition: all 0.3s ease;
+                    transform: scale(0.9);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                }
+                .swiper-button-next:after, .swiper-button-prev:after {
+                    font-size: 20px !important;
+                    font-weight: 800;
                 }
                 .swiper-button-next:hover, .swiper-button-prev:hover {
                     background: #d4af37;
                     color: #141414 !important;
-                    transform: scale(1);
+                    transform: scale(1.05);
+                    box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+                    border-color: #d4af37;
                 }
+                .swiper-button-next.swiper-button-disabled, 
+                .swiper-button-prev.swiper-button-disabled {
+                    opacity: 0.3 !important;
+                    pointer-events: none;
+                }
+                .swiper-button-prev {
+                    left: -20px !important;
+                }
+                .swiper-button-next {
+                    right: -20px !important;
+                }
+                @media (max-width: 640px) {
+                    .swiper-button-prev { left: 0px !important; }
+                    .swiper-button-next { right: 0px !important; }
+                }
+
                 .swiper-pagination-bullet {
-                    background: rgba(255, 255, 255, 0.2) !important;
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    width: 10px !important;
+                    height: 10px !important;
+                    border-radius: 5px !important;
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                    opacity: 1 !important;
+                }
+                .swiper-pagination-bullet:hover {
+                    background: rgba(255, 255, 255, 0.4) !important;
+                    transform: scale(1.2);
                 }
                 .swiper-pagination-bullet-active {
                     background: #d4af37 !important;
+                    width: 32px !important;
+                    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
                 }
             `}} />
         </section>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { User, Mail, Lock, Bell, Shield, LogOut, CheckCircle2, ChevronRight, Camera } from "lucide-react";
 import { Button } from "../components/ui/Button";
@@ -8,6 +8,25 @@ import { toast } from "sonner";
 export function Profile() {
     const [activeTab, setActiveTab] = useState("genel");
     const [isLoading, setIsLoading] = useState(false);
+    const [avatar, setAvatar] = useState(studentData.avatar);
+    
+    // Form states
+    const [formData, setFormData] = useState({
+        firstName: studentData.name.split(" ")[0] || "",
+        lastName: studentData.name.split(" ")[1] || "",
+        email: "ahmet.yilmaz@example.com",
+        bio: ""
+    });
+
+    const fileInputRef = useRef(null);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     const handleSave = (e) => {
         e.preventDefault();
@@ -19,6 +38,73 @@ export function Profile() {
                 style: { background: "#10B981", color: "#fff", border: "none" }
             });
         }, 1500);
+    };
+
+    const triggerFileInput = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+        if (file.size > MAX_SIZE) {
+            toast.loading("Fotoğraf boyutu 5MB'dan büyük, otomatik küçültülüyor...", { id: "upload-toast" });
+            
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const MAX_WIDTH = 500;
+                    const MAX_HEIGHT = 500;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    setAvatar(resizedDataUrl);
+                    toast.success("Fotoğraf başarıyla küçültüldü ve eklendi.", { id: "upload-toast" }); // replaces the loading toast
+                };
+            };
+        } else {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setAvatar(event.target.result);
+                toast.success("Fotoğraf başarıyla eklendi.");
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Reset input so the same file could be uploaded again if needed
+        e.target.value = null;
+    };
+
+    const handleDeleteAvatar = () => {
+        const placeholder = `https://ui-avatars.com/api/?name=${encodeURIComponent(studentData.name)}&background=FBBF24&color=101010`;
+        setAvatar(placeholder);
+        toast.success("Profil fotoğrafı kaldırıldı.");
     };
 
     return (
@@ -55,7 +141,7 @@ export function Profile() {
 
                                 <div className="h-px bg-white/10 my-2"></div>
 
-                                <button className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-left text-red-500 hover:bg-red-500/10 hover:text-red-400">
+                                <button className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-left text-red-500 hover:bg-red-500/10 hover:text-red-400" onClick={() => toast.success('Oturum başarıyla kapatıldı.')}>
                                     <LogOut className="w-5 h-5" />
                                     Oturumu Kapat
                                 </button>
@@ -73,9 +159,9 @@ export function Profile() {
                                     <h2 className="text-2xl font-bold text-white mb-8">Genel Profil Bilgileri</h2>
 
                                     <div className="flex items-center gap-6 mb-10 pb-10 border-b border-white/10">
-                                        <div className="relative group cursor-pointer">
+                                        <div className="relative group cursor-pointer" onClick={triggerFileInput}>
                                             <div className="w-24 h-24 rounded-full border-2 border-brand-gold/50 p-1 overflow-hidden">
-                                                <img src={studentData.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover group-hover:blur-sm transition-all" />
+                                                <img src={avatar} alt="Avatar" className="w-full h-full rounded-full object-cover group-hover:blur-sm transition-all" />
                                             </div>
                                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <div className="bg-black/50 p-2 rounded-full backdrop-blur-md">
@@ -87,8 +173,19 @@ export function Profile() {
                                             <h3 className="text-lg font-bold text-white mb-1">Profil Fotoğrafı</h3>
                                             <p className="text-sm text-gray-400 mb-3">Önerilen boyut: 500x500px, Maks: 5MB</p>
                                             <div className="flex gap-3">
-                                                <Button variant="outline" className="py-2 px-4 min-h-0 text-xs">Fotoğraf Yükle</Button>
-                                                <Button variant="outline" className="py-2 px-4 min-h-0 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50">Sil</Button>
+                                                <input 
+                                                    type="file" 
+                                                    ref={fileInputRef} 
+                                                    onChange={handleImageUpload} 
+                                                    accept="image/*" 
+                                                    className="hidden" 
+                                                />
+                                                <Button type="button" variant="outline" className="py-2 px-4 min-h-0 text-xs" onClick={triggerFileInput}>
+                                                    Fotoğraf Yükle
+                                                </Button>
+                                                <Button type="button" variant="outline" className="py-2 px-4 min-h-0 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50" onClick={handleDeleteAvatar}>
+                                                    Sil
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>
@@ -99,14 +196,26 @@ export function Profile() {
                                                 <label className="text-sm font-medium text-gray-300">Adınız</label>
                                                 <div className="relative">
                                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                                    <input type="text" defaultValue={studentData.name.split(" ")[0]} className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
+                                                    <input 
+                                                        type="text" 
+                                                        name="firstName"
+                                                        value={formData.firstName}
+                                                        onChange={handleInputChange}
+                                                        className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" 
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-sm font-medium text-gray-300">Soyadınız</label>
                                                 <div className="relative">
                                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                                    <input type="text" defaultValue={studentData.name.split(" ")[1]} className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
+                                                    <input 
+                                                        type="text" 
+                                                        name="lastName"
+                                                        value={formData.lastName}
+                                                        onChange={handleInputChange}
+                                                        className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" 
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -115,7 +224,13 @@ export function Profile() {
                                             <label className="text-sm font-medium text-gray-300">E-Posta Adresi</label>
                                             <div className="relative">
                                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                                <input type="email" defaultValue="ahmet.yilmaz@example.com" className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
+                                                <input 
+                                                    type="email" 
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" 
+                                                />
                                             </div>
                                             <p className="text-xs text-brand-gold mt-1 flex items-center gap-1">
                                                 <CheckCircle2 className="w-3 h-3" /> Onaylanmış e-posta adresi
@@ -126,6 +241,9 @@ export function Profile() {
                                             <label className="text-sm font-medium text-gray-300">Özgeçmiş / Biyografi (İsteğe Bağlı)</label>
                                             <textarea
                                                 rows="4"
+                                                name="bio"
+                                                value={formData.bio}
+                                                onChange={handleInputChange}
                                                 className="w-full bg-[#101010] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors resize-none"
                                                 placeholder="Kendinizden, akademik hedeflerinizden ve ilgi alanlarınızdan bahsedin..."
                                             ></textarea>

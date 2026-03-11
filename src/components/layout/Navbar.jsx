@@ -44,6 +44,7 @@ export function Navbar() {
     }, []);
 
     const navLinks = [
+        { name: "Hakkımızda", href: "/about" },
         { name: "Tüm Dersler", href: "/courses" },
         { name: "Soru & Cevap", href: "/community" },
         { name: "Makaleler", href: "/blog" },
