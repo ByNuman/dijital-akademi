@@ -1,0 +1,36 @@
+[
+  {
+    "day": "Pazartesi",
+    "courses": [
+      { "time": "09:00 - 11:00", "title": "Tefsir Usulü I", "instructor": "Prof. Dr. Ahmet Yılmaz", "room": "Derslik 1" },
+      { "time": "11:00 - 13:00", "title": "Fıkıh Usulü I", "instructor": "Doç. Dr. Mehmet Demir", "room": "Derslik 2" }
+    ]
+  },
+  {
+    "day": "Salı",
+    "courses": [
+      { "time": "09:00 - 11:00", "title": "Hadis Usulü I", "instructor": "Dr. Öğr. Üyesi Ayşe Kaya", "room": "Derslik 3" },
+      { "time": "11:00 - 13:00", "title": "İslam Tarihi I", "instructor": "Prof. Dr. Fatma Çelik", "room": "Konferans Salonu" }
+    ]
+  },
+  {
+    "day": "Çarşamba",
+    "courses": [
+      { "time": "09:00 - 11:00", "title": "Arapça Dilbilgisi I", "instructor": "Dr. Öğr. Üyesi Ali Öztürk", "room": "Derslik 4" },
+      { "time": "11:00 - 13:00", "title": "Kur'an-ı Kerim I", "instructor": "Öğr. Gör. Mustafa Can", "room": "Mescid" }
+    ]
+  },
+  {
+    "day": "Perşembe",
+    "courses": [
+      { "time": "09:00 - 11:00", "title": "Akaid Esasları I", "instructor": "Prof. Dr. İbrahim Yıldız", "room": "Derslik 1" },
+      { "time": "11:00 - 13:00", "title": "Tasavvuf Kültürü I", "instructor": "Doç. Dr. Zeynep Aksoy", "room": "Derslik 2" }
+    ]
+  },
+  {
+    "day": "Cuma",
+    "courses": [
+      { "time": "09:00 - 11:00", "title": "Mantık ve Münazara I", "instructor": "Dr. Öğr. Üyesi Hasan Yavuz", "room": "Kütüphane" }
+    ]
+  }
+]

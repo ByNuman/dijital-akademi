@@ -1,0 +1,36 @@
+[
+  {
+    "date": "06 Nisan 2026, Pazartesi",
+    "exams": [
+      { "time": "10:00 - 11:30", "title": "Tefsir Usulü I", "room": "Derslik 1" },
+      { "time": "14:00 - 15:30", "title": "Fıkıh Usulü I", "room": "Derslik 2" }
+    ]
+  },
+  {
+    "date": "07 Nisan 2026, Salı",
+    "exams": [
+      { "time": "10:00 - 11:30", "title": "Hadis Usulü I", "room": "Derslik 3" },
+      { "time": "14:00 - 15:30", "title": "İslam Tarihi I", "room": "Konferans Salonu" }
+    ]
+  },
+  {
+    "date": "08 Nisan 2026, Çarşamba",
+    "exams": [
+      { "time": "10:00 - 11:30", "title": "Arapça Dilbilgisi I", "room": "Derslik 4" },
+      { "time": "14:00 - 15:30", "title": "Kur'an-ı Kerim Tecvid I", "room": "Mescid" }
+    ]
+  },
+  {
+    "date": "09 Nisan 2026, Perşembe",
+    "exams": [
+      { "time": "10:00 - 11:30", "title": "Akaid Esasları I", "room": "Derslik 1" },
+      { "time": "14:00 - 15:30", "title": "Tasavvuf Kültürü I", "room": "Derslik 2" }
+    ]
+  },
+  {
+    "date": "10 Nisan 2026, Cuma",
+    "exams": [
+      { "time": "10:00 - 11:30", "title": "Mantık ve Münazara I", "room": "Kütüphane" }
+    ]
+  }
+]

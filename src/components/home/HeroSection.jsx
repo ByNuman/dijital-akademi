@@ -2,23 +2,25 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { Play } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const dersler = [
-    "ARAP DİLİ VE EDEBİYATI 4",
+    "ARAP DİLİ VE EDEBİYATI",
     "DİN PSİKOLOJİSİ",
     "DİN SOSYOLOJİSİ",
-    "FELSEFE TARİHİ 2",
-    "HADİS 2",
-    "İSLAM HUKUK USULÜ 2",
-    "İSLAM TARİHİ 3",
+    "FELSEFE TARİHİ",
+    "HADİS",
+    "İSLAM HUKUK USULÜ",
+    "İSLAM TARİHİ",
     "KELAM TARİHİ",
     "ÖĞRETİM İLKE VE YÖNTEMLERİ",
-    "TEFSİR 2"
+    "TEFSİR"
 ];
 
 export function HeroSection() {
     const [currentDersIndex, setCurrentDersIndex] = useState(0);
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -65,9 +67,11 @@ export function HeroSection() {
                         <div
                             className="flex flex-col sm:flex-row gap-5 justify-center items-center"
                         >
-                            <Button onClick={() => navigate('/login')} variant="primary" className="text-base px-8 py-4 !rounded-xl font-bold shadow-[0_5px_20px_rgba(251,191,36,0.3)] hover:shadow-[0_8px_30px_rgba(251,191,36,0.5)]">
-                                Hemen Başla
-                            </Button>
+                            {!currentUser && (
+                                <Button onClick={() => navigate('/login')} variant="primary" className="text-base px-8 py-4 !rounded-xl font-bold shadow-[0_5px_20px_rgba(251,191,36,0.3)] hover:shadow-[0_8px_30px_rgba(251,191,36,0.5)]">
+                                    Hemen Başla
+                                </Button>
+                            )}
                             <Button onClick={() => navigate('/courses')} variant="outline" className="text-base px-8 py-4 !rounded-xl group flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-brand-gold/10 flex items-center justify-center group-hover:bg-brand-gold transition-colors">
                                     <Play className="w-4 h-4 text-brand-gold group-hover:text-brand-black ml-0.5" />

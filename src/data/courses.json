@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "title": "IV. SINIF",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 2,
+    "title": "B Z04",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 3,
+    "title": "EĞİTİMDE ÖLÇ. VE DEĞ. Ü. ÇELEN",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 7,
+    "title": "TASAVVUF II M. ÖZÇELİK",
+    "time": "13.00 13.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 9,
+    "title": "REHBERLİK A. DURAN",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 11,
+    "title": "DİN FELSEFESİ II M. A. ALTUNIŞIK",
+    "time": "10.30 11.15",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 13,
+    "title": "DİNLER TARİHİ II M. SUSUZ AYGÜL",
+    "time": "13.00 13.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 17,
+    "title": "İSLAM İNSAN",
+    "time": "10.30 11.15",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 18,
+    "title": "DEMOKRASİSİ A. TEKİN",
+    "time": "11.30 12.15",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 19,
+    "title": "C204",
+    "time": "A. PİRİNÇ",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 20,
+    "title": "ÖĞRETMENLİK UYGULAMASI",
+    "time": "13.00 13.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 21,
+    "title": "Türk",
+    "time": "15.00 15.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 22,
+    "title": "(ADS)",
+    "time": "16.00 16.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 23,
+    "title": "DİN HİZ. REH. VE İLT. A. GÜN",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 25,
+    "title": "İSLAM HUKUKU II B. DURAN",
+    "time": "10.30 11.15",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 27,
+    "title": "KURAN VI İ. KİRENCİ – E. UYSAL C204",
+    "time": "13.00 13.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 29,
+    "title": "TEFSİR IV R. O. ÖZEL",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 31,
+    "title": "KURAN VIII",
+    "time": "10.30 11.15",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 32,
+    "title": "A. KAZAN – A.",
+    "time": "ARAP D. VE ED. VI",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 33,
+    "title": "YEŞİLDAĞ",
+    "time": "R. O. ÖZEL",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 37,
+    "title": "İSL. AHL. ES. VE FELS. G. TURHAN",
+    "time": "13.45 14.30",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 40,
+    "title": "A Z04",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 43,
+    "title": "HADİS IV N. AYDIN",
+    "time": "17.00 17.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 45,
+    "title": "TASAVVUF II M. SALİH EDİS",
+    "time": "19.00 19.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 53,
+    "title": "ALEVİLİK-",
+    "time": "HZ. MUHAMMED VE",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 54,
+    "title": "BEKTAŞİLİK",
+    "time": "",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 56,
+    "title": "DİNLER TARİHİ II N. YILMAZ",
+    "time": "17.00 17.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 58,
+    "title": "İSLAM MEZ. TAR. I Ü. TORU",
+    "time": "19.00 19.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 63,
+    "title": "SİSTEMATİK KELAM II M. ŞAŞA",
+    "time": "18.00 18.45",
+    "instructor": "Belirtilmemiş"
+  },
+  {
+    "id": 70,
+    "title": "ÖGRETMENLİK UYGULAMASI",
+    "time": "19.30 20.15",
+    "instructor": "Belirtilmemiş"
+  }
+]

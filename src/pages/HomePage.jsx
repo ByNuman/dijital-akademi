@@ -2,7 +2,6 @@ import { Helmet } from 'react-helmet-async';
 import { HeroSection } from "../components/home/HeroSection";
 import { RecentlyAdded } from "../components/home/RecentlyAdded";
 import { FeaturedCourses } from "../components/home/FeaturedCourses";
-import { Categories } from "../components/home/Categories";
 import { FinalCTA } from "../components/home/FinalCTA";
 
 export function HomePage() {
@@ -18,7 +17,6 @@ export function HomePage() {
             <HeroSection />
             <RecentlyAdded />
             <FeaturedCourses />
-            <Categories />
             <FinalCTA />
         </>
     );

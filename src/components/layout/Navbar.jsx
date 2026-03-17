@@ -44,17 +44,13 @@ export function Navbar() {
     }, []);
 
     const navLinks = [
-        { name: "Hakkımızda", href: "/about" },
         { name: "Tüm Dersler", href: "/courses" },
-        { name: "Soru & Cevap", href: "/community" },
-        { name: "Makaleler", href: "/blog" },
+        { name: "Programlar", href: "/programs" },
     ];
 
     const profileLinks = [
         ...(userData?.role === 'admin' ? [{ name: "Yönetici Paneli", href: "/admin", icon: ShieldAlert }] : []),
         { name: "Öğrenci Paneli", href: "/dashboard", icon: BookOpen },
-        { name: "Liderlik Tablosu", href: "/leaderboard", icon: Trophy },
-        { name: "Profil Ayarları", href: "/profile", icon: Settings },
     ];
 
     return (
@@ -110,10 +106,16 @@ export function Navbar() {
                     {currentUser ? (
                         <>
                             {/* Notifications */}
-                            <button className="relative text-gray-400 hover:text-white transition-colors">
-                                <Bell className="w-5 h-5" />
-                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand-gold rounded-full border-2 border-[#101010]"></span>
-                            </button>
+                            <div className="relative group">
+                                <button className="relative text-gray-400 hover:text-white transition-colors focus:outline-none py-2">
+                                    <Bell className="w-5 h-5" />
+                                </button>
+                                
+                                {/* Notification Dropdown */}
+                                <div className="absolute right-0 top-full mt-2 w-64 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl py-4 px-4 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50 origin-top">
+                                    <p className="text-sm text-gray-400 text-center">Şu an için yeni bildiriminiz yok.</p>
+                                </div>
+                            </div>
 
                             {/* Profile Dropdown */}
                             <div className="relative" ref={dropdownRef}>
@@ -121,8 +123,14 @@ export function Navbar() {
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                     className="flex items-center gap-3 focus:outline-none"
                                 >
-                                    <div className="w-10 h-10 rounded-full border-2 border-brand-gold/50 p-0.5 overflow-hidden transition-all hover:border-brand-gold">
-                                        <img src={studentData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                                    <div className="w-10 h-10 rounded-full border-2 border-brand-gold/50 p-0.5 overflow-hidden transition-all hover:border-brand-gold hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] flex items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#111]">
+                                        {userData?.avatar ? (
+                                            <img src={userData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                                        ) : (
+                                            <span className="text-sm font-bold text-brand-gold uppercase drop-shadow-[0_2px_4px_rgba(251,191,36,0.2)]">
+                                                {userData?.name ? userData.name.split(' ').filter(Boolean).map((n, i, arr) => (i === 0 || i === arr.length - 1 ? n[0] : '')).join('') : 'U'}
+                                            </span>
+                                        )}
                                     </div>
                                 </button>
 
@@ -188,16 +196,21 @@ export function Navbar() {
                         {/* Mobile User Info */}
                         {currentUser ? (
                             <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/5">
-                                <div className="w-12 h-12 rounded-full border border-brand-gold/50 p-0.5 overflow-hidden">
-                                    <img src={studentData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                                <div className="w-12 h-12 rounded-full border-2 border-brand-gold/50 p-0.5 overflow-hidden shadow-[0_0_10px_rgba(251,191,36,0.15)] flex items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#111] shrink-0">
+                                    {userData?.avatar ? (
+                                        <img src={userData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                        <span className="text-lg font-bold text-brand-gold uppercase drop-shadow-[0_2px_4px_rgba(251,191,36,0.2)]">
+                                            {userData?.name ? userData.name.split(' ').filter(Boolean).map((n, i, arr) => (i === 0 || i === arr.length - 1 ? n[0] : '')).join('') : 'U'}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex-1">
                                     <div className="text-white font-bold text-lg">{userData?.name || "Kullanıcı"}</div>
                                     <div className="text-brand-gold text-sm">{userData?.role === 'admin' ? 'Yönetici' : 'Öğrenci Hesabı'}</div>
                                 </div>
-                                <button className="p-2 text-gray-400 hover:text-white relative">
+                                <button className="p-2 text-gray-400 hover:text-white relative" onClick={() => alert("Şu an için yeni bildiriminiz yok.")}>
                                     <Bell className="w-5 h-5" />
-                                    <span className="absolute top-2 right-2 w-2 h-2 bg-brand-gold rounded-full"></span>
                                 </button>
                             </div>
                         ) : (

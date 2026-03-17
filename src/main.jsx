@@ -6,6 +6,7 @@ import App from './App.jsx'
 import { LibraryProvider } from './context/LibraryContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { CoursesProvider } from './context/CoursesContext.jsx'
+import { EventsProvider } from './context/EventsContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <CoursesProvider>
           <LibraryProvider>
-            <App />
+            <EventsProvider>
+              <App />
+            </EventsProvider>
           </LibraryProvider>
         </CoursesProvider>
       </AuthProvider>

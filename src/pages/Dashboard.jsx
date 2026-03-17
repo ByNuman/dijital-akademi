@@ -6,10 +6,13 @@ import { Button } from "../components/ui/Button";
 import { studentData } from "../data/studentData";
 import { useLibrary } from "../context/LibraryContext";
 import { useAuth } from "../context/AuthContext";
+import { useEvents } from "../context/EventsContext";
+import calendarData from "../data/calendar.json";
 
 export function Dashboard() {
     const { savedCourses, xp } = useLibrary();
     const { userData } = useAuth();
+    const { events } = useEvents();
 
     const currentLevel = Math.floor(xp / 500) + 1;
     const xpForNextLevel = currentLevel * 500;
@@ -26,20 +29,20 @@ export function Dashboard() {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-12 bg-[#1A1A1A] p-8 rounded-3xl border border-white/5">
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                        <div className="w-24 h-24 rounded-full border-2 border-brand-gold p-1 overflow-hidden shrink-0">
-                            <img src={userData?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || 'Öğrenci')}&background=FBBF24&color=101010`} alt={userData?.name || "Öğrenci"} className="w-full h-full rounded-full object-cover" />
+                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/50 p-1 overflow-hidden shadow-[0_0_20px_rgba(251,191,36,0.2)] flex items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#111] shrink-0">
+                            {userData?.avatar ? (
+                                <img src={userData.avatar} alt={userData?.name || "Öğrenci"} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                                <span className="text-4xl font-bold text-brand-gold uppercase drop-shadow-[0_2px_8px_rgba(251,191,36,0.3)]">
+                                    {userData?.name ? userData.name.split(' ').filter(Boolean).map((n, i, arr) => (i === 0 || i === arr.length - 1 ? n[0] : '')).join('') : 'U'}
+                                </span>
+                            )}
                         </div>
                         <div className="text-center md:text-left">
                             <h1 className="text-3xl font-black text-white mb-2">Hoş Geldiniz, <span className="text-brand-gold">{userData?.name || "Öğrenci"}</span></h1>
                             <p className="text-gray-400">İlim yolculuğunuzda bugün nerede kalmıştık?</p>
                         </div>
                     </div>
-                    <Link to="/profile">
-                        <Button variant="outline" className="flex items-center gap-2 h-10 min-h-0 bg-[#101010]/50">
-                            <Settings className="w-4 h-4" />
-                            Profili Düzenle
-                        </Button>
-                    </Link>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -170,35 +173,49 @@ export function Dashboard() {
                         </div>
 
                         {/* Upcoming Events Box */}
-                        <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6">
+                        <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6 md:mt-0 mt-8">
                             <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                                 <Calendar className="w-5 h-5 text-brand-gold" />
-                                Yaklaşan Etkinlikler
+                                Akademik Takvim
                             </h3>
                             <div className="space-y-4">
-                                {studentData.upcomingEvents.map((event) => {
+                                {[...events, ...calendarData.map(item => ({
+                                    id: `cal-${item.id}`,
+                                    title: item.title,
+                                    date: item.parsedDate || item.date,
+                                    type: item.type
+                                }))]
+                                    .sort((a, b) => new Date(a.date) - new Date(b.date))
+                                    .filter(e => new Date(e.date) >= new Date(new Date().setHours(0,0,0,0)))
+                                    .slice(0, 3)
+                                    .map((event) => {
                                     const eventDate = new Date(event.date);
                                     return (
                                         <div key={event.id} className="flex gap-4 items-start p-3 rounded-xl hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5">
-                                            <div className="bg-brand-gold/10 text-brand-gold rounded-lg p-2 text-center min-w-[3rem] border border-brand-gold/20">
-                                                <div className="text-sm font-black">{eventDate.getDate()}</div>
-                                                <div className="text-xs uppercase font-bold">
+                                            <div className="bg-brand-gold/10 text-brand-gold rounded-lg p-2 text-center min-w-[3.5rem] border border-brand-gold/20 flex flex-col items-center justify-center">
+                                                <div className="text-lg font-black leading-none">{eventDate.getDate()}</div>
+                                                <div className="text-xs uppercase font-bold mt-1">
                                                     {eventDate.toLocaleString('tr-TR', { month: 'short' })}
                                                 </div>
                                             </div>
-                                            <div>
+                                            <div className="flex-1">
                                                 <div className="text-white text-sm font-bold mb-1 leading-tight line-clamp-2">{event.title}</div>
                                                 <div className="text-xs text-gray-500 flex items-center gap-1">
                                                     <Clock className="w-3 h-3" />
-                                                    {eventDate.getHours().toString().padStart(2, '0')}:{eventDate.getMinutes().toString().padStart(2, '0')}
+                                                    {event.type === 'live' ? 'Canlı Ders' :
+                                                     event.type === 'assignment' ? 'Ödev' :
+                                                     event.type === 'exam' ? 'Sınav' : 'Akademik Takvim'}
                                                 </div>
                                             </div>
                                         </div>
                                     )
                                 })}
+                                {[...events, ...calendarData].filter(e => new Date(e.parsedDate || e.date) >= new Date(new Date().setHours(0,0,0,0))).length === 0 && (
+                                    <p className="text-gray-500 text-sm text-center py-4">Yaklaşan etkinlik bulunmuyor.</p>
+                                )}
                             </div>
-                            <Button variant="outline" className="w-full mt-6 py-2.5 text-sm h-auto min-h-0 border-white/10 hover:bg-white/5">
-                                Tüm Takvimi Gör
+                            <Button variant="outline" className="w-full mt-6 py-2.5 text-sm h-auto min-h-0 border-white/10 hover:bg-white/5 hover:text-white text-gray-400">
+                                Tümünü Gör
                             </Button>
                         </div>
                     </div>

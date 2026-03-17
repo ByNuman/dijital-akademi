@@ -18,6 +18,7 @@ const Community = React.lazy(() => import('./pages/Community'));
 const Blog = React.lazy(() => import('./pages/Blog'));
 const About = React.lazy(() => import('./pages/About'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const Programs = React.lazy(() => import('./pages/Programs'));
 
 // Info Pages
 const { 
@@ -45,6 +46,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/course/:id" element={<CourseDetail />} />
+            <Route path="/programs" element={<Programs />} />
             <Route path="/about" element={<About />} />
             <Route path="/community" element={<Community />} />
             <Route path="/blog" element={<Blog />} />

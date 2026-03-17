@@ -39,18 +39,6 @@ export function Footer() {
                                     Site Nasıl Kullanılır?
                                 </Link>
                             </li>
-                            <li>
-                                <Link to="/kvkk" className="hover:text-brand-gold transition-colors flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-brand-gold/50"></span>
-                                    KVKK Aydınlatma Metni
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/sss" className="hover:text-brand-gold transition-colors flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-brand-gold/50"></span>
-                                    Sıkça Sorulan Sorular
-                                </Link>
-                            </li>
                         </ul>
                     </div>
 

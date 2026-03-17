@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useEvents } from "../context/EventsContext";
 import { db } from "../config/firebase";
 import { collection, setDoc, doc, getDocs, deleteDoc, updateDoc } from "firebase/firestore";
 import { courses as coursesData } from "../data/coursesData";
 import { toast } from "sonner";
 import { Button } from "../components/ui/Button";
 
-import { Plus, Database, LayoutDashboard, LayoutList, Trash2, Edit, BookOpen, Users, Trophy, HelpCircle, X as XIcon, ChevronDown } from "lucide-react";
+import { Plus, Database, LayoutDashboard, LayoutList, Trash2, Edit, BookOpen, Users, Trophy, HelpCircle, X as XIcon, ChevronDown, Calendar } from "lucide-react";
 
 export function AdminDashboard() {
     const { userData } = useAuth();
-    const [activeTab, setActiveTab] = useState("overview"); // overview, addCourse, courses, tools
+    const { events, addEvent, updateEvent, deleteEvent } = useEvents();
+    const [activeTab, setActiveTab] = useState("overview"); // overview, addCourse, courses, calendar, tools
     const [isMigrating, setIsMigrating] = useState(false);
     const [courses, setCourses] = useState([]);
     const [usersCount, setUsersCount] = useState(0);
@@ -30,6 +32,14 @@ export function AdminDashboard() {
         options: ["", "", "", ""],
         correctAnswer: 0
     });
+    
+    // Calendar Add/Edit States
+    const [eventForm, setEventForm] = useState({
+        title: "",
+        date: "",
+        type: "live"
+    });
+    const [editingEventId, setEditingEventId] = useState(null);
 
     const predefinedCourses = {
         "Hadis 2": "Temel İslam Bilimleri",
@@ -313,6 +323,7 @@ export function AdminDashboard() {
         { id: "overview", label: "Genel Bakış", icon: LayoutDashboard },
         { id: "courses", label: "Dersler", icon: LayoutList },
         { id: "addCourse", label: "Ders Ekle", icon: Plus },
+        { id: "calendar", label: "Akademik Takvim", icon: Calendar },
         { id: "tools", label: "Araçlar", icon: Database },
     ];
 
@@ -1002,6 +1013,108 @@ export function AdminDashboard() {
                                                     {isSubmitting ? "Kaydediliyor..." : "Tüm Değişiklikleri Kaydet"}
                                                 </Button>
                                             </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Calendar Tab */}
+                                {activeTab === "calendar" && (
+                                    <div className="space-y-6">
+                                        <h1 className="text-3xl font-bold text-white mb-6">Akademik Takvim Yönetimi</h1>
+                                        
+                                        <div className="bg-[#1A1A1A] p-6 rounded-2xl border border-white/10 mb-8">
+                                            <h2 className="text-xl font-bold text-white mb-4">Yeni Etkinlik Ekle</h2>
+                                            <div className="flex flex-col md:flex-row gap-4 mb-4">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Etkinlik Başlığı"
+                                                    value={eventForm.title}
+                                                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                                                    className="flex-1 bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-brand-gold outline-none transition-colors"
+                                                />
+                                                <input
+                                                    type="date"
+                                                    value={eventForm.date}
+                                                    onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                                                    className="bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-brand-gold outline-none transition-colors md:w-48"
+                                                />
+                                                <select
+                                                    value={eventForm.type}
+                                                    onChange={(e) => setEventForm({ ...eventForm, type: e.target.value })}
+                                                    className="bg-[#222] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:border-brand-gold outline-none transition-colors md:w-48"
+                                                >
+                                                    <option value="live">Canlı Ders</option>
+                                                    <option value="assignment">Ödev</option>
+                                                    <option value="exam">Sınav</option>
+                                                    <option value="event">Etkinlik</option>
+                                                </select>
+                                            </div>
+                                            <Button
+                                                onClick={() => {
+                                                    if (!eventForm.title || !eventForm.date) return;
+                                                    if (editingEventId) {
+                                                        updateEvent(editingEventId, eventForm);
+                                                        setEditingEventId(null);
+                                                    } else {
+                                                        addEvent(eventForm);
+                                                    }
+                                                    setEventForm({ title: "", date: "", type: "live" });
+                                                }}
+                                                variant="primary"
+                                                className="bg-brand-gold text-brand-black hover:bg-brand-gold/90 font-medium"
+                                            >
+                                                {editingEventId ? "Etkinliği Güncelle" : "Etkinlik Ekle"}
+                                            </Button>
+                                            {editingEventId && (
+                                                <Button
+                                                    onClick={() => {
+                                                        setEditingEventId(null);
+                                                        setEventForm({ title: "", date: "", type: "live" });
+                                                    }}
+                                                    variant="outline"
+                                                    className="ml-2 border-white/20 text-gray-300 hover:bg-white/5"
+                                                >
+                                                    Vazgeç
+                                                </Button>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <h2 className="text-xl font-bold text-white mb-4">Mevcut Etkinlikler</h2>
+                                            {[...events].sort((a, b) => new Date(a.date) - new Date(b.date)).map(event => (
+                                                <div key={event.id} className="bg-[#1A1A1A] p-4 rounded-xl border border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+                                                    <div>
+                                                        <h3 className="text-white font-medium">{event.title}</h3>
+                                                        <p className="text-gray-400 text-sm mt-1">{new Date(event.date).toLocaleDateString('tr-TR')} • {
+                                                            event.type === 'live' ? 'Canlı Ders' :
+                                                            event.type === 'assignment' ? 'Ödev' :
+                                                            event.type === 'exam' ? 'Sınav' : 'Etkinlik'
+                                                        }</p>
+                                                    </div>
+                                                    <div className="flex gap-2 w-full md:w-auto">
+                                                        <Button
+                                                            onClick={() => {
+                                                                setEventForm({ title: event.title, date: event.date, type: event.type });
+                                                                setEditingEventId(event.id);
+                                                            }}
+                                                            variant="outline"
+                                                            className="flex-1 md:flex-none border-blue-500/50 text-blue-400 hover:bg-blue-500/10 p-2 h-auto"
+                                                        >
+                                                            <Edit size={18} />
+                                                        </Button>
+                                                        <Button
+                                                            onClick={() => deleteEvent(event.id)}
+                                                            variant="outline"
+                                                            className="flex-1 md:flex-none border-red-500/50 text-red-500 hover:bg-red-500/10 p-2 h-auto"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {events.length === 0 && (
+                                                <p className="text-gray-500 text-center py-8 bg-[#1A1A1A] rounded-xl border border-white/5">Henüz etkinlik eklenmemiş.</p>
+                                            )}
                                         </div>
                                     </div>
                                 )}
