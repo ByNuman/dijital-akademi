@@ -171,19 +171,19 @@ export function Profile() {
                                         </div>
                                         <div>
                                             <h3 className="text-lg font-bold text-white mb-1">Profil Fotoğrafı</h3>
-                                            <p className="text-sm text-gray-400 mb-3">Önerilen boyut: 500x500px, Maks: 5MB</p>
-                                            <div className="flex gap-3">
+                                            <p className="text-sm text-gray-400 mb-3">Profil fotoğrafı değişikliği şu an için kapalıdır.</p>
+                                            <div className="flex gap-3 opacity-50 pointer-events-none">
                                                 <input 
                                                     type="file" 
                                                     ref={fileInputRef} 
-                                                    onChange={handleImageUpload} 
+                                                    disabled
                                                     accept="image/*" 
                                                     className="hidden" 
                                                 />
-                                                <Button type="button" variant="outline" className="py-2 px-4 min-h-0 text-xs" onClick={triggerFileInput}>
+                                                <Button type="button" variant="outline" className="py-2 px-4 min-h-0 text-xs" disabled>
                                                     Fotoğraf Yükle
                                                 </Button>
-                                                <Button type="button" variant="outline" className="py-2 px-4 min-h-0 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/50" onClick={handleDeleteAvatar}>
+                                                <Button type="button" variant="outline" className="py-2 px-4 min-h-0 text-xs border-red-500/30 text-red-500" disabled>
                                                     Sil
                                                 </Button>
                                             </div>
@@ -200,8 +200,8 @@ export function Profile() {
                                                         type="text" 
                                                         name="firstName"
                                                         value={formData.firstName}
-                                                        onChange={handleInputChange}
-                                                        className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" 
+                                                        disabled
+                                                        className="w-full bg-[#101010] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
                                                     />
                                                 </div>
                                             </div>
@@ -213,8 +213,8 @@ export function Profile() {
                                                         type="text" 
                                                         name="lastName"
                                                         value={formData.lastName}
-                                                        onChange={handleInputChange}
-                                                        className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" 
+                                                        disabled
+                                                        className="w-full bg-[#101010] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
                                                     />
                                                 </div>
                                             </div>
@@ -228,8 +228,8 @@ export function Profile() {
                                                     type="email" 
                                                     name="email"
                                                     value={formData.email}
-                                                    onChange={handleInputChange}
-                                                    className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" 
+                                                    disabled
+                                                    className="w-full bg-[#101010] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
                                                 />
                                             </div>
                                             <p className="text-xs text-brand-gold mt-1 flex items-center gap-1">
@@ -243,15 +243,26 @@ export function Profile() {
                                                 rows="4"
                                                 name="bio"
                                                 value={formData.bio}
-                                                onChange={handleInputChange}
-                                                className="w-full bg-[#101010] border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors resize-none"
-                                                placeholder="Kendinizden, akademik hedeflerinizden ve ilgi alanlarınızdan bahsedin..."
+                                                disabled
+                                                className="w-full bg-[#101010] border border-white/5 rounded-xl p-4 text-gray-500 cursor-not-allowed resize-none"
+                                                placeholder="Profil biyografisi şu an düzenlenemez."
                                             ></textarea>
                                         </div>
 
+                                        <div className="pt-6 bg-brand-gold/5 border border-brand-gold/20 rounded-2xl p-6">
+                                            <div className="flex items-center gap-3 text-brand-gold mb-2">
+                                                <Lock className="w-5 h-5" />
+                                                <span className="font-bold">Profil Düzenleme Kapalı</span>
+                                            </div>
+                                            <p className="text-sm text-gray-400">
+                                                Güvenlik politikaları gereği profil bilgilerinizi şu an için manuel olarak değiştiremezsiniz. 
+                                                Bilgi değişikliği talepleriniz için lütfen öğrenci işleri ile iletişime geçin.
+                                            </p>
+                                        </div>
+
                                         <div className="pt-4 flex justify-end">
-                                            <Button type="submit" variant="primary" className="px-8" disabled={isLoading}>
-                                                {isLoading ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
+                                            <Button type="submit" variant="primary" className="px-8 opacity-50 cursor-not-allowed" disabled>
+                                                Değişiklikleri Kaydet
                                             </Button>
                                         </div>
                                     </form>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, Sparkles, Bell, User, BookOpen, Award, Settings, LogOut, Trophy, ShieldAlert, ArrowLeft } from "lucide-react";
+import { Menu, X, Sparkles, Bell, User, BookOpen, Award, Settings, LogOut, Trophy, ShieldAlert, ArrowLeft, ChevronDown } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../ui/Button";
 import { studentData } from "../../data/studentData";
@@ -45,7 +45,6 @@ export function Navbar() {
 
     const navLinks = [
         { name: "Tüm Dersler", href: "/courses" },
-        { name: "Programlar", href: "/programs" },
     ];
 
     const profileLinks = [
@@ -90,14 +89,37 @@ export function Navbar() {
                 {/* Desktop Links */}
                 <div className="hidden md:flex items-center gap-8">
                     {navLinks.map((link) => (
-                        <Link
-                            key={link.name}
-                            to={link.href}
-                            className="text-[15px] font-medium transition-colors relative group text-gray-300 hover:text-white"
-                        >
-                            {link.name}
-                            <span className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-brand-gold transition-all duration-300 group-hover:w-full"></span>
-                        </Link>
+                        link.isDropdown ? (
+                            <div key={link.name} className="relative group/dropdown py-2">
+                                <button className="flex items-center gap-1.5 text-[15px] font-medium transition-colors text-gray-300 hover:text-white group pointer-events-auto">
+                                    {link.name}
+                                    <ChevronDown className="w-4 h-4 transition-transform duration-300 group-hover/dropdown:rotate-180" />
+                                </button>
+                                
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-56 opacity-0 translate-y-2 pointer-events-none group-hover/dropdown:opacity-100 group-hover/dropdown:translate-y-0 group-hover/dropdown:pointer-events-auto transition-all duration-300 z-[60]">
+                                    <div className="bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl py-3 px-2 backdrop-blur-xl">
+                                        {link.dropdownItems.map((item) => (
+                                            <Link
+                                                key={item.name}
+                                                to={item.href}
+                                                className="block px-4 py-2 text-sm text-gray-400 hover:text-brand-gold hover:bg-white/5 rounded-xl transition-all"
+                                            >
+                                                {item.name}
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <Link
+                                key={link.name}
+                                to={link.href}
+                                className="text-[15px] font-medium transition-colors relative group text-gray-300 hover:text-white"
+                            >
+                                {link.name}
+                                <span className="absolute -bottom-1.5 left-0 w-0 h-0.5 bg-brand-gold transition-all duration-300 group-hover:w-full"></span>
+                            </Link>
+                        )
                     ))}
                 </div>
 
@@ -225,14 +247,33 @@ export function Navbar() {
                         )}
 
                         {navLinks.map((link) => (
-                            <Link
-                                key={link.name}
-                                to={link.href}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="text-lg font-medium py-3 text-gray-300 hover:text-white"
-                            >
-                                {link.name}
-                            </Link>
+                            <div key={link.name} className="flex flex-col">
+                                {link.isDropdown ? (
+                                    <>
+                                        <div className="text-lg font-medium py-3 text-gray-400 uppercase text-xs tracking-widest mt-2 border-b border-white/5">
+                                            {link.name}
+                                        </div>
+                                        {link.dropdownItems.map((item) => (
+                                            <Link
+                                                key={item.name}
+                                                to={item.href}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="text-lg font-medium py-3 pl-4 text-gray-300 hover:text-white border-b border-white/5"
+                                            >
+                                                {item.name}
+                                            </Link>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <Link
+                                        to={link.href}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="text-lg font-medium py-3 text-gray-300 hover:text-white border-b border-white/5"
+                                    >
+                                        {link.name}
+                                    </Link>
+                                )}
+                            </div>
                         ))}
 
                         {currentUser && (

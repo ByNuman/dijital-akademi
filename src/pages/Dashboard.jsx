@@ -1,6 +1,6 @@
 
 import { Helmet } from 'react-helmet-async';
-import { BookOpen, Clock, Calendar, PlayCircle, Trophy, Settings, SearchX } from "lucide-react";
+import { BookOpen, Clock, Calendar, PlayCircle, Trophy, Settings, SearchX, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { studentData } from "../data/studentData";
@@ -10,7 +10,7 @@ import { useEvents } from "../context/EventsContext";
 import calendarData from "../data/calendar.json";
 
 export function Dashboard() {
-    const { savedCourses, xp } = useLibrary();
+    const { savedCourses, xp, removeFromLibrary } = useLibrary();
     const { userData } = useAuth();
     const { events } = useEvents();
 
@@ -88,12 +88,26 @@ export function Dashboard() {
                                                         <span className="text-xs text-brand-slate font-medium bg-brand-gold px-2 py-1 rounded-md">
                                                             Aktif
                                                         </span>
-                                                        <Link to={`/learn/${course.id}`}>
-                                                            <Button variant="primary" className="text-sm py-1.5 px-4 min-h-0 rounded-lg flex items-center gap-2 font-semibold">
-                                                                <PlayCircle className="w-4 h-4" />
-                                                                Eğitime Dön
+                                                        <div className="flex items-center gap-2">
+                                                            <Link to={`/learn/${course.id}`}>
+                                                                <Button variant="primary" className="text-sm py-1.5 px-4 min-h-0 rounded-lg flex items-center gap-2 font-semibold">
+                                                                    <PlayCircle className="w-4 h-4" />
+                                                                    Eğitime Dön
+                                                                </Button>
+                                                            </Link>
+                                                            <Button 
+                                                                variant="outline" 
+                                                                onClick={() => {
+                                                                    if(window.confirm('Bu dersi kütüphanenizden kaldırmak istediğinize emin misiniz?')) {
+                                                                        removeFromLibrary(course.id);
+                                                                    }
+                                                                }}
+                                                                className="text-sm py-1.5 px-3 min-h-0 rounded-lg flex items-center justify-center font-semibold border-red-500/30 text-red-500 hover:bg-red-500/10 hover:border-red-500/50"
+                                                                title="Dersi Kütüphaneden Kaldır"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
                                                             </Button>
-                                                        </Link>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
