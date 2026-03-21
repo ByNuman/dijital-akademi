@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Helmet } from 'react-helmet-async';
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 
@@ -8,9 +8,14 @@ import { FileText, CheckCircle2, ChevronRight, Star, Clock, Users, BookOpen, Hea
 import { Button } from "../components/ui/Button";
 import { useLibrary } from "../context/LibraryContext";
 import { useCourses } from "../context/CoursesContext";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "sonner";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 
 export function CourseDetail() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const courseId = id || "1"; 
     
     const { courses, loading: contextLoading } = useCourses();
@@ -18,6 +23,7 @@ export function CourseDetail() {
     const loading = contextLoading;
 
     const { addToLibrary, isCourseInLibrary } = useLibrary();
+    const { currentUser } = useAuth();
 
     // Dinamik öğrenci sayısı (admin hariç)
     const [studentCount, setStudentCount] = useState(0);
@@ -61,6 +67,14 @@ export function CourseDetail() {
 
     const totalMaterials = materialCounts.pdf + materialCounts.slide + materialCounts.audio + materialCounts.test;
 
+    const handleStartCourse = (e) => {
+        if (!currentUser) {
+            e.preventDefault();
+            toast.error("Ders materyallerine erişmek için lütfen giriş yapın.");
+            navigate("/login");
+        }
+    };
+
     if (loading) {
         return (
             <div className="pt-24 pb-20 min-h-screen flex justify-center items-center">
@@ -91,6 +105,11 @@ export function CourseDetail() {
                 </div>
 
                 <div className="container mx-auto px-6 md:px-12 relative z-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <BackButton />
+                        <Breadcrumbs />
+                    </div>
+                    
                     <div className="max-w-3xl">
                         <div className="flex gap-2 mb-6">
                             <span className="bg-brand-gold/10 border border-brand-gold/30 text-brand-gold px-3 py-1 rounded-full text-sm font-semibold">
@@ -204,7 +223,7 @@ export function CourseDetail() {
                                 <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
                             </div>
 
-                            <Link to={`/learn/${course.id}`}>
+                            <Link to={`/learn/${course.id}`} onClick={handleStartCourse}>
                                 <Button variant="primary" className="w-full justify-center py-4 text-lg font-bold mb-4 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.5)]">
                                     Hemen Eğitime Başla
                                 </Button>

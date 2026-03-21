@@ -2,6 +2,8 @@ import { useState, useRef } from "react";
 
 import { User, Mail, Lock, Bell, Shield, LogOut, CheckCircle2, ChevronRight, Camera } from "lucide-react";
 import { Button } from "../components/ui/Button";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 import { studentData } from "../data/studentData";
 import { toast } from "sonner";
 
@@ -110,6 +112,12 @@ export function Profile() {
     return (
         <div className="pt-24 pb-20 min-h-screen">
             <div className="container mx-auto px-6 md:px-12 max-w-6xl">
+                <div className="mb-12">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <BackButton />
+                        <Breadcrumbs />
+                    </div>
+                </div>
                 <div className="flex flex-col md:flex-row gap-8">
 
                     {/* Sidebar Navigation */}

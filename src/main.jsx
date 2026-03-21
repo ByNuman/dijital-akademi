@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HelmetProvider } from 'react-helmet-async'
+import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { LibraryProvider } from './context/LibraryContext.jsx'
@@ -11,18 +12,20 @@ import { ProgramsProvider } from './context/ProgramsContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <HelmetProvider>
-      <AuthProvider>
-        <ProgramsProvider>
-          <CoursesProvider>
-          <LibraryProvider>
-            <EventsProvider>
-                <App />
-            </EventsProvider>
-          </LibraryProvider>
-        </CoursesProvider>
-        </ProgramsProvider>
-      </AuthProvider>
-    </HelmetProvider>
+    <BrowserRouter>
+      <HelmetProvider>
+        <AuthProvider>
+          <ProgramsProvider>
+            <CoursesProvider>
+              <LibraryProvider>
+                <EventsProvider>
+                    <App />
+                </EventsProvider>
+              </LibraryProvider>
+            </CoursesProvider>
+          </ProgramsProvider>
+        </AuthProvider>
+      </HelmetProvider>
+    </BrowserRouter>
   </StrictMode>,
 )

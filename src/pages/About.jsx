@@ -1,10 +1,18 @@
 import React from 'react';
 import { Target, Lightbulb, Users, Rocket, Sparkles, ShieldCheck } from 'lucide-react';
+import { Helmet } from "react-helmet-async";
 import { motion } from 'framer-motion';
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 
 export default function About() {
     return (
         <div className="pt-24 pb-20 min-h-screen bg-[#101010]">
+            <Helmet>
+                <title>Hakkımızda - Dijital Akademi</title>
+                <meta name="description" content="Dijital Akademi'nin hikayesi, vizyonu ve misyonu hakkında bilgi edinin." />
+            </Helmet>
+
             {/* Background Elements */}
             <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
                 <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-brand-gold/10 blur-[120px] rounded-full"></div>
@@ -12,6 +20,12 @@ export default function About() {
             </div>
 
             <div className="container mx-auto px-6 md:px-12 relative z-10">
+                <div className="mb-12">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <BackButton />
+                        <Breadcrumbs />
+                    </div>
+                </div>
                 
                 {/* Header Section */}
                 <div className="text-center max-w-3xl mx-auto mb-20 pt-10">

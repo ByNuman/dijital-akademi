@@ -1,5 +1,7 @@
-
 import { BookText, ArrowRight, ArrowUpRight, Search, FileSymlink, Sparkles } from "lucide-react";
+import { Helmet } from "react-helmet-async";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 import { Button } from "../components/ui/Button";
 
 export function Blog() {
@@ -40,6 +42,20 @@ export function Blog() {
 
     return (
         <div className="pt-24 pb-20 min-h-screen">
+            <Helmet>
+                <title>Blog - Dijital Akademi</title>
+                <meta name="description" content="Dijital pazarlama ve teknoloji dünyasından en son haberler, ipuçları ve rehberler." />
+            </Helmet>
+            
+            <div className="container mx-auto px-6 md:px-12 mb-12">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                    <BackButton />
+                    <Breadcrumbs />
+                </div>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Blog</h1>
+                <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto relative z-10 font-medium">Ufuk açıcı okumalar, metodoloji tahlilleri ve akademi içerik kütüphanesine hoş geldiniz.</p>
+            </div>
+
             <div className="container mx-auto px-6 md:px-12 max-w-6xl">
 
                 {/* Header Graphic */}
@@ -51,7 +67,6 @@ export function Blog() {
                         <BookText className="w-10 h-10" />
                     </div>
                     <h1 className="text-4xl md:text-6xl font-black text-white mb-6 relative z-10 tracking-tight">Akademik <span className="text-brand-gold">Makaleler</span></h1>
-                    <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto relative z-10 font-medium">Ufuk açıcı okumalar, metodoloji tahlilleri ve akademi içerik kütüphanesine hoş geldiniz.</p>
                 </div>
 
                 {/* Main Content Layout */}

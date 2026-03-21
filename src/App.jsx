@@ -1,9 +1,12 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "./components/ui/PageTransition";
 import { Toaster } from 'sonner';
 import { MainLayout } from './components/layout/MainLayout';
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { AdminRoute } from './components/auth/AdminRoute';
+import ScrollToTop from './components/ui/ScrollToTop';
 
 const HomePage = React.lazy(() => import('./pages/HomePage'));
 const Courses = React.lazy(() => import('./pages/Courses'));
@@ -20,6 +23,7 @@ const About = React.lazy(() => import('./pages/About'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 
 // Info Pages
+const InfoPages = await import('./pages/info/InfoPages');
 const { 
   NasilKullanilir, 
   KVKK, 
@@ -27,7 +31,7 @@ const {
   GizlilikPolitikasi, 
   CerezPolitikasi, 
   KullanimSartlari 
-} = await import('./pages/info/InfoPages');
+} = InfoPages;
 
 // Yükleme Animasyonu
 const PageLoader = () => (
@@ -37,49 +41,55 @@ const PageLoader = () => (
 );
 
 function App() {
+  const location = useLocation();
+
   return (
-    <Router>
+    <>
+      <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/courses" element={<Courses />} />
-            <Route path="/course/:id" element={<CourseDetail />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<PageTransition><HomePage /></PageTransition>} />
+              <Route path="/courses" element={<PageTransition><Courses /></PageTransition>} />
+              <Route path="/course" element={<Navigate to="/courses" replace />} />
+              <Route path="/course/:id" element={<PageTransition><CourseDetail /></PageTransition>} />
+              <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+              <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
+              <Route path="/blog" element={<PageTransition><Blog /></PageTransition>} />
+              <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+              <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
 
-            {/* Info Pages */}
-            <Route path="/nasil-kullanilir" element={<NasilKullanilir />} />
-            <Route path="/kvkk" element={<KVKK />} />
-            <Route path="/sss" element={<SSS />} />
-            <Route path="/gizlilik-politikasi" element={<GizlilikPolitikasi />} />
-            <Route path="/cerez-politikasi" element={<CerezPolitikasi />} />
-            <Route path="/kullanim-sartlari" element={<KullanimSartlari />} />
+              {/* Info Pages */}
+              <Route path="/nasil-kullanilir" element={<PageTransition><NasilKullanilir /></PageTransition>} />
+              <Route path="/kvkk" element={<PageTransition><KVKK /></PageTransition>} />
+              <Route path="/sss" element={<PageTransition><SSS /></PageTransition>} />
+              <Route path="/gizlilik-politikasi" element={<PageTransition><GizlilikPolitikasi /></PageTransition>} />
+              <Route path="/cerez-politikasi" element={<PageTransition><CerezPolitikasi /></PageTransition>} />
+              <Route path="/kullanim-sartlari" element={<PageTransition><KullanimSartlari /></PageTransition>} />
 
-            {/* Protected Routes inside MainLayout */}
+              {/* Protected Routes inside MainLayout */}
+              <Route element={<PrivateRoute />}>
+                <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
+                <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
+                <Route path="/leaderboard" element={<PageTransition><Leaderboard /></PageTransition>} />
+              </Route>
+
+              {/* Admin Routes */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<PageTransition><AdminDashboard /></PageTransition>} />
+              </Route>
+            </Route>
+
+            {/* Course Player Layout'suz/Özel Layout ile olacak (Sidebar için) - Sadece giriş yapanlara */}
             <Route element={<PrivateRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
+              <Route path="/learn/:id" element={<CoursePlayer />} />
             </Route>
-
-            {/* Admin Routes */}
-            <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminDashboard />} />
-            </Route>
-          </Route>
-
-          {/* Course Player Layout'suz/Özel Layout ile olacak (Sidebar için) - Sadece giriş yapanlara */}
-          <Route element={<PrivateRoute />}>
-            <Route path="/learn/:id" element={<CoursePlayer />} />
-          </Route>
-        </Routes>
+          </Routes>
+        </AnimatePresence>
       </Suspense>
       <Toaster position="bottom-right" />
-    </Router>
+    </>
   )
 }
 

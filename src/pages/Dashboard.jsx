@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { BookOpen, Clock, Calendar, PlayCircle, Trophy, Settings, SearchX, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 import { studentData } from "../data/studentData";
 import { useLibrary } from "../context/LibraryContext";
 import { useAuth } from "../context/AuthContext";
@@ -25,6 +27,12 @@ export function Dashboard() {
                 <meta name="description" content="İslami ilimler derslerinize Kaldığınız yerden devam edin." />
             </Helmet>
             <div className="container mx-auto px-6 md:px-12">
+                <div className="mb-12">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <BackButton />
+                        <Breadcrumbs />
+                    </div>
+                </div>
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-12 bg-[#1A1A1A] p-8 rounded-3xl border border-white/5">

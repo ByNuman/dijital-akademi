@@ -30,4 +30,28 @@
   .gold-glow:hover {
     box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
   }
+
+  .premium-card {
+    @apply bg-[#1A1A1A] border border-white/5 rounded-3xl p-8 hover:border-brand-gold/20 transition-all duration-500 hover:shadow-[0_0_40px_rgba(251,191,36,0.05)];
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400;
+  }
+
+  .gold-gradient {
+    @apply bg-gradient-to-br from-brand-gold to-brand-gold-dark;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
 }

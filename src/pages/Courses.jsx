@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
-
-import { Search, Filter, Star, Users, Clock, ArrowRight, BookOpen } from "lucide-react";
+import { Search, Filter, Star, Clock, ArrowRight, BookOpen } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { useCourses } from "../context/CoursesContext";
+import { useLibrary } from "../context/LibraryContext";
 import { Helmet } from "react-helmet-async";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumbs } from "../components/ui/Breadcrumbs";
+import { motion } from "framer-motion";
 
 export function Courses() {
     const { courses, loading } = useCourses();
+    const { savedCourses } = useLibrary();
     const [searchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("Tümü");
@@ -36,18 +40,20 @@ export function Courses() {
     });
 
     return (
-        <div className="pt-32 pb-24 min-h-screen">
+        <div className="pt-24 pb-24 min-h-screen">
             <Helmet>
                 <title>Tüm Eğitimler - Dijital Akademi</title>
                 <meta name="description" content="Tefsir, Fıkıh, Kelam, Arapça ve daha birçok İslami ilimler eğitimine ücretsiz erişin." />
             </Helmet>
-            {/* Header & Search */}
+            
             <div className="container mx-auto px-6 md:px-12 mb-12">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+                    <BackButton />
+                    <Breadcrumbs />
+                </div>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div>
-                        <h1
-                            className="text-4xl md:text-5xl font-black text-white mb-4"
-                        >
+                        <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
                             Ders <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-gold-dark">Kataloğu</span>
                         </h1>
                         <p className="text-gray-400">Akademik gelişiminiz için özenle hazırlanmış dersleri keşfedin.</p>
@@ -97,12 +103,13 @@ export function Courses() {
                 ) : (
                 <>
                     {filteredCourses.length > 0 ? (
-                        <div
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-                        >
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                             {filteredCourses.map((course) => (
-                                <div
+                                <motion.div
                                     key={course.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
                                     className="bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden group hover:border-brand-gold/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(251,191,36,0.1)] flex flex-col h-full"
                                 >
                                     <div className="relative h-48 overflow-hidden">
@@ -114,7 +121,7 @@ export function Courses() {
                                         />
                                         <div className="absolute top-4 left-4 z-20 flex gap-2">
                                             {(course.tags || []).slice(0, 1).map(tag => (
-                                                <span key={tag} className="bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-3 py-1 rounded-full border border-white/10">
+                                                <span key={tag} className="bg-black/60 backdrop-blur-md text-white text-[10px] uppercase tracking-tighter font-bold px-3 py-1 rounded-full border border-white/10">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -122,48 +129,60 @@ export function Courses() {
                                     </div>
 
                                     <div className="p-6 flex flex-col flex-grow">
-                                        <div className="text-brand-gold text-xs font-bold uppercase tracking-wider mb-2">
-                                            {course.category}
-                                        </div>
-                                        <h3 className="text-white text-xl font-bold mb-2 group-hover:text-brand-gold transition-colors line-clamp-2">
-                                            {course.title}
-                                        </h3>
-                                        <p className="text-gray-400 text-sm mb-4">
-                                            {course.category}
-                                        </p>
-
-                                        <div className="flex items-center justify-between text-sm text-gray-500 mt-auto pt-4 border-t border-white/5">
-                                            {course.rating > 0 ? (
-                                                <div className="flex items-center gap-1.5">
-                                                    <Star className="w-4 h-4 text-brand-gold fill-brand-gold" />
-                                                    <span className="text-white font-medium">{course.rating}</span>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1.5">
-                                                    <BookOpen className="w-4 h-4 text-brand-gold" />
-                                                    <span className="text-gray-400">{course.modules?.length || 0} Konu</span>
-                                                </div>
-                                            )}
-                                            <div className="flex items-center gap-1.5">
-                                                <Users className="w-4 h-4" />
-                                                <span>{course.modules?.length || 0} Modül</span>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-brand-gold bg-brand-gold/10 px-2 py-1 rounded">
+                                                {course.category}
+                                            </span>
+                                            <div className="flex items-center gap-1 text-gray-500 text-[10px] font-bold">
+                                                <Clock className="w-3 h-3 text-brand-gold" />
+                                                <span>{course.duration || "12 Saat"}</span>
                                             </div>
                                         </div>
+                                        <h3 className="text-white text-lg font-bold mb-1 group-hover:text-brand-gold transition-colors line-clamp-1">
+                                            {course.title}
+                                        </h3>
+                                        <p className="text-gray-500 text-xs mb-4 italic font-medium">
+                                            {course.instructor}
+                                        </p>
 
-                                        <Link to={`/course/${course.id}`} className="mt-6 w-full">
-                                            <Button variant="outline" className="w-full flex items-center justify-center gap-2 group-hover:bg-brand-gold group-hover:text-brand-black group-hover:border-brand-gold transition-all duration-300">
-                                                Dersi İncele
-                                                <ArrowRight className="w-4 h-4" />
-                                            </Button>
-                                        </Link>
+                                        {/* Progress Bar */}
+                                        <div className="mb-5 mt-2">
+                                            {(() => {
+                                                const enrolledCourse = savedCourses.find(c => c.id === course.id);
+                                                const currentProgress = enrolledCourse ? (enrolledCourse.progress || 0) : 0;
+                                                return (
+                                                    <>
+                                                        <div className="flex justify-between text-[10px] text-gray-500 mb-1.5 font-bold uppercase tracking-widest">
+                                                            <span>İLERLEME</span>
+                                                            <span className="text-brand-gold">%{currentProgress}</span>
+                                                        </div>
+                                                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                                            <motion.div 
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${currentProgress}%` }}
+                                                                transition={{ duration: 1, ease: "easeOut" }}
+                                                                className="h-full bg-brand-gold shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                                                            />
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
+                                        </div>
+
+                                        <div className="flex items-center justify-end mt-auto pt-4 border-t border-white/5">
+                                            <Link
+                                                to={`/course/${course.id}`}
+                                                className="p-2 rounded-lg bg-white/5 border border-white/10 text-brand-gold hover:bg-brand-gold hover:text-black transition-all duration-300 group/btn"
+                                            >
+                                                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                                            </Link>
+                                        </div>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
                     ) : (
-                        <div
-                            className="col-span-full py-20 text-center"
-                        >
+                        <div className="col-span-full py-20 text-center">
                             <div className="inline-flex w-20 h-20 bg-white/5 rounded-full items-center justify-center mb-6 border border-white/10">
                                 <Search className="w-10 h-10 text-gray-500" />
                             </div>

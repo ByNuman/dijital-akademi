@@ -97,21 +97,17 @@ export function RecentlyAdded() {
                                         to={isCourseInLibrary(mod.courseId) ? `/learn/${mod.courseId}?lesson=${mod.lessonNum}` : `/course/${mod.courseId}`} 
                                         className="group block bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden hover:border-brand-gold/30 transition-all duration-300 hover:shadow-2xl hover:shadow-brand-gold/10 h-full flex flex-col"
                                     >
-                                        <div className="relative aspect-video overflow-hidden bg-[#222]">
+                                        <div className="relative aspect-video overflow-hidden">
                                             {mod.courseImage ? (
                                                 <img 
                                                     src={mod.courseImage} 
                                                     alt={mod.courseTitle}
-                                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500 opacity-60 group-hover:opacity-80"
+                                                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full bg-gradient-to-br from-[#222] to-[#111]"></div>
                                             )}
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <div className="w-16 h-16 rounded-full bg-black/50 border border-white/20 flex items-center justify-center backdrop-blur-md group-hover:scale-110 group-hover:bg-brand-gold/90 group-hover:border-brand-gold transition-all duration-300">
-                                                    <PlayCircle className="w-8 h-8 text-white ml-1 group-hover:text-[#111] transition-colors" />
-                                                </div>
-                                            </div>
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
                                             <div className="absolute top-4 left-4">
                                                 <span className="bg-black/60 backdrop-blur-md border border-white/10 text-brand-gold px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
                                                     {mod.courseCategory}

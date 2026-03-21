@@ -1,6 +1,8 @@
 import { FileText, Calendar, Globe, Award, Video, BarChart2 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Helmet } from "react-helmet-async";
+import { BackButton } from "../components/ui/BackButton";
+import { Breadcrumbs } from "../components/ui/Breadcrumbs";
 
 export function Programs() {
     const programFeatures = [
@@ -17,13 +19,19 @@ export function Programs() {
     };
 
     return (
-        <div className="pt-32 pb-24 min-h-screen bg-[#0A0A0A]">
+        <div className="pt-24 pb-20 min-h-screen bg-[#0A0A0A]">
             <Helmet>
                 <title>Program Detayları - Dijital Akademi</title>
                 <meta name="description" content="Eğitim programımızın detaylarını ve müfredatını inceleyin." />
             </Helmet>
             
-            <div className="container mx-auto px-6 md:px-12">
+            <div className="container mx-auto px-6 md:px-12 max-w-6xl">
+                <div className="mb-12">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <BackButton />
+                        <Breadcrumbs />
+                    </div>
+                </div>
                 <div className="max-w-5xl mx-auto">
                     {/* Hero Section of Program */}
                     <div className="relative rounded-[2rem] overflow-hidden mb-16 border border-white/5 bg-[#111111] p-8 md:p-12 shadow-2xl">

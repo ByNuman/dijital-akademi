@@ -127,18 +127,6 @@ export function Navbar() {
                 <div className="hidden md:flex items-center gap-6">
                     {currentUser ? (
                         <>
-                            {/* Notifications */}
-                            <div className="relative group">
-                                <button className="relative text-gray-400 hover:text-white transition-colors focus:outline-none py-2">
-                                    <Bell className="w-5 h-5" />
-                                </button>
-                                
-                                {/* Notification Dropdown */}
-                                <div className="absolute right-0 top-full mt-2 w-64 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl py-4 px-4 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-200 z-50 origin-top">
-                                    <p className="text-sm text-gray-400 text-center">Şu an için yeni bildiriminiz yok.</p>
-                                </div>
-                            </div>
-
                             {/* Profile Dropdown */}
                             <div className="relative" ref={dropdownRef}>
                                 <button
