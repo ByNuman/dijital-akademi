@@ -55,7 +55,7 @@ export function Navbar() {
     return (
         <nav
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                ? "bg-[#101010]/80 backdrop-blur-xl border-b border-white/5 py-4 shadow-2xl"
+                ? "glass-effect py-4"
                 : "bg-transparent py-6"
                 }`}
         >
@@ -80,7 +80,7 @@ export function Navbar() {
                             />
                             <div className="absolute inset-0 bg-brand-gold/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         </div>
-                        <span className="text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-brand-gold to-brand-gold bg-clip-text text-transparent opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-300 origin-left">
+                        <span className="text-xl md:text-2xl font-bold tracking-tight text-gold-gradient opacity-90 group-hover:opacity-100 group-hover:scale-[1.02] transition-all duration-300 origin-left">
                             Dijital Akademi
                         </span>
                     </Link>
@@ -97,7 +97,7 @@ export function Navbar() {
                                 </button>
                                 
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-56 opacity-0 translate-y-2 pointer-events-none group-hover/dropdown:opacity-100 group-hover/dropdown:translate-y-0 group-hover/dropdown:pointer-events-auto transition-all duration-300 z-[60]">
-                                    <div className="bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl py-3 px-2 backdrop-blur-xl">
+                                    <div className="glass-effect rounded-2xl py-3 px-2">
                                         {link.dropdownItems.map((item) => (
                                             <Link
                                                 key={item.name}
@@ -133,7 +133,7 @@ export function Navbar() {
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                                     className="flex items-center gap-3 focus:outline-none"
                                 >
-                                    <div className="w-10 h-10 rounded-full border-2 border-brand-gold/50 p-0.5 overflow-hidden transition-all hover:border-brand-gold hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] flex items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#111]">
+                                    <div className="w-10 h-10 rounded-full border-2 border-brand-gold/50 p-0.5 overflow-hidden transition-all hover:border-brand-gold hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] flex items-center justify-center bg-[#121212]">
                                         {userData?.avatar ? (
                                             <img src={userData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
                                         ) : (
@@ -146,7 +146,7 @@ export function Navbar() {
 
                                 {isProfileOpen && (
                                     <div
-                                        className="absolute right-0 top-full mt-3 w-64 bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl py-2 overflow-hidden"
+                                        className="absolute right-0 top-full mt-3 w-64 glass-effect rounded-2xl py-2 overflow-hidden"
                                     >
                                         <div className="px-4 py-3 border-b border-white/5 mb-2">
                                             <div className="text-white font-bold">{userData?.name || "Kullanıcı"}</div>
@@ -200,13 +200,13 @@ export function Navbar() {
             {/* Mobile Menu Dropdown */}
             {isMobileMenuOpen && (
                 <div
-                    className="md:hidden bg-[#101010]/95 backdrop-blur-xl border-b border-white/5 border-t border-t-white/5 absolute top-full left-0 right-0 overflow-hidden shadow-2xl"
+                    className="md:hidden glass-effect border-t border-b absolute top-full left-0 right-0 overflow-hidden"
                 >
                     <div className="py-6 px-6 flex flex-col gap-2">
                         {/* Mobile User Info */}
                         {currentUser ? (
                             <div className="flex items-center gap-4 mb-4 pb-4 border-b border-white/5">
-                                <div className="w-12 h-12 rounded-full border-2 border-brand-gold/50 p-0.5 overflow-hidden shadow-[0_0_10px_rgba(251,191,36,0.15)] flex items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#111] shrink-0">
+                                <div className="w-12 h-12 rounded-full border-2 border-brand-gold/50 p-0.5 overflow-hidden shadow-[0_0_10px_rgba(212,175,55,0.15)] flex items-center justify-center bg-[#121212] shrink-0">
                                     {userData?.avatar ? (
                                         <img src={userData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
                                     ) : (

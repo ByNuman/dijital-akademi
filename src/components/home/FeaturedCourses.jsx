@@ -3,56 +3,60 @@ import { useCourses } from "../../context/CoursesContext";
 import { Button } from "../ui/Button";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+
 export function FeaturedCourses() {
     const { courses, loading } = useCourses();
     const featuredCourses = courses.slice(0, 8);
-    return (
-        <section className="py-24 bg-[#141414] relative border-y border-white/5" id="dersler">
-            <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
 
+    return (
+        <section className="py-24 bg-brand-black relative overflow-hidden" id="dersler">
+            {/* Background Decorations */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-gold/[0.03] blur-[120px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
+            
             <div className="container mx-auto px-6 md:px-12 relative z-10">
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
                     <div className="max-w-2xl">
-                        <h2
-                            className="text-4xl md:text-5xl font-black text-white mb-6"
-                        >
-                            Öne Çıkan <span className="text-brand-gold">Dersler</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-gold/[0.08] border border-brand-gold/20 text-brand-gold text-[10px] font-black uppercase tracking-[0.2em] mb-6">
+                            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse"></span>
+                            Editörün Seçimi
+                        </div>
+                        <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
+                            Öne Çıkan <span className="text-gold-gradient italic font-serif">Seçkin Eğitimler</span>
                         </h2>
-                        <p
-                            className="text-gray-400 text-lg"
-                        >
-                            Alanında uzman akademisyenler tarafından hazırlanan, en çok tercih edilen eğitim programlarımızı keşfedin.
+                        <p className="text-gray-500 text-lg leading-relaxed">
+                            İslami ilimler alanında en çok tercih edilen ve derinlikli bilgi sunan derslerimizle tanışın.
                         </p>
                     </div>
-                    <div>
+                    
+                    <div className="hidden md:block">
                         <Link to="/courses">
-                            <Button variant="outline" className="hidden md:inline-flex rounded-xl font-semibold">
-                                Tüm Dersleri Gör
+                            <Button variant="outline" className="rounded-xl px-8 font-bold border-white/10 text-white hover:bg-white hover:text-black">
+                                Tümünü Gör
                             </Button>
                         </Link>
                     </div>
                 </div>
 
-                <div className="w-full relative">
+                <div className="relative">
                     {loading ? (
-                        <div className="flex justify-center py-10">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-gold"></div>
-                        </div>
-                    ) : featuredCourses.length === 0 ? (
-                        <div className="bg-[#1A1A1A] border-dashed border border-white/10 rounded-2xl p-12 text-center">
-                            <p className="text-gray-400 text-lg">Henüz öne çıkan ders bulunmuyor.</p>
+                        <div className="flex justify-center items-center py-20">
+                            <div className="w-8 h-8 border-2 border-brand-gold border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     ) : (
                         <Swiper
-                            modules={[Navigation, Pagination]}
+                            modules={[Navigation, Pagination, Autoplay]}
                             spaceBetween={32}
                             slidesPerView={1}
                             navigation
                             pagination={{ clickable: true }}
+                            autoplay={{
+                                delay: 6000,
+                                disableOnInteraction: false,
+                            }}
                             breakpoints={{
                                 640: { slidesPerView: 1 },
                                 768: { slidesPerView: 2 },
@@ -71,7 +75,7 @@ export function FeaturedCourses() {
 
                 <div className="md:hidden flex justify-center mt-10">
                     <Link to="/courses" className="w-full">
-                        <Button variant="outline" className="w-full rounded-xl font-semibold">
+                        <Button variant="outline" className="w-full rounded-xl font-semibold border-white/10">
                             Tüm Dersleri Gör
                         </Button>
                     </Link>

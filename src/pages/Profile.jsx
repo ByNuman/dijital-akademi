@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 
 import { User, Mail, Lock, Bell, Shield, LogOut, CheckCircle2, ChevronRight, Camera } from "lucide-react";
+import { Helmet } from "react-helmet-async";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../components/ui/Button";
 import { BackButton } from "../components/ui/BackButton";
 import { Breadcrumbs } from "../components/ui/Breadcrumbs";
@@ -111,6 +113,10 @@ export function Profile() {
 
     return (
         <div className="pt-24 pb-20 min-h-screen">
+            <Helmet>
+                <title>Profil Ayarları - Dijital Akademi</title>
+                <meta name="description" content="Profil bilgilerinizi güncelleyin, güvenlik ayarlarınızı yönetin ve bildirim tercihlerinizi düzenleyin." />
+            </Helmet>
             <div className="container mx-auto px-6 md:px-12 max-w-6xl">
                 <div className="mb-12">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -122,7 +128,7 @@ export function Profile() {
 
                     {/* Sidebar Navigation */}
                     <div className="w-full md:w-64 shrink-0">
-                        <div className="bg-[#1A1A1A] border border-white/5 rounded-2xl p-4 sticky top-28">
+                        <div className="bg-brand-surface border border-white/5 rounded-2xl p-4 sticky top-28">
                             <div className="flex flex-col gap-2">
                                 {[
                                     { id: "genel", label: "Genel Bilgiler", icon: User },
@@ -162,7 +168,7 @@ export function Profile() {
                         <>
                             {activeTab === "genel" && (
                                 <div
-                                    className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8"
+                                    className="bg-brand-surface border border-white/5 rounded-3xl p-8"
                                 >
                                     <h2 className="text-2xl font-bold text-white mb-8">Genel Profil Bilgileri</h2>
 
@@ -209,7 +215,7 @@ export function Profile() {
                                                         name="firstName"
                                                         value={formData.firstName}
                                                         disabled
-                                                        className="w-full bg-[#101010] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
+                                                        className="w-full bg-brand-input border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
                                                     />
                                                 </div>
                                             </div>
@@ -222,7 +228,7 @@ export function Profile() {
                                                         name="lastName"
                                                         value={formData.lastName}
                                                         disabled
-                                                        className="w-full bg-[#101010] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
+                                                        className="w-full bg-brand-input border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
                                                     />
                                                 </div>
                                             </div>
@@ -237,7 +243,7 @@ export function Profile() {
                                                     name="email"
                                                     value={formData.email}
                                                     disabled
-                                                    className="w-full bg-[#101010] border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
+                                                    className="w-full bg-brand-input border border-white/5 rounded-xl py-3 pl-12 pr-4 text-gray-500 cursor-not-allowed" 
                                                 />
                                             </div>
                                             <p className="text-xs text-brand-gold mt-1 flex items-center gap-1">
@@ -252,7 +258,7 @@ export function Profile() {
                                                 name="bio"
                                                 value={formData.bio}
                                                 disabled
-                                                className="w-full bg-[#101010] border border-white/5 rounded-xl p-4 text-gray-500 cursor-not-allowed resize-none"
+                                                className="w-full bg-brand-input border border-white/5 rounded-xl p-4 text-gray-500 cursor-not-allowed resize-none"
                                                 placeholder="Profil biyografisi şu an düzenlenemez."
                                             ></textarea>
                                         </div>
@@ -279,7 +285,7 @@ export function Profile() {
 
                             {activeTab === "guvenlik" && (
                                 <div
-                                    className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8"
+                                    className="bg-brand-surface border border-white/5 rounded-3xl p-8"
                                 >
                                     <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
                                         Güvenlik ve Şifre
@@ -290,7 +296,7 @@ export function Profile() {
                                             <label className="text-sm font-medium text-gray-300">Mevcut Şifreniz</label>
                                             <div className="relative">
                                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                                <input type="password" placeholder="••••••••" className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
+                                                <input type="password" placeholder="••••••••" className="w-full bg-brand-input border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
                                             </div>
                                         </div>
 
@@ -300,7 +306,7 @@ export function Profile() {
                                             <label className="text-sm font-medium text-gray-300">Yeni Şifre</label>
                                             <div className="relative">
                                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                                <input type="password" placeholder="En az 8 karakter" className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
+                                                <input type="password" placeholder="En az 8 karakter" className="w-full bg-brand-input border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
                                             </div>
                                         </div>
 
@@ -308,7 +314,7 @@ export function Profile() {
                                             <label className="text-sm font-medium text-gray-300">Yeni Şifre (Tekrar)</label>
                                             <div className="relative">
                                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                                                <input type="password" placeholder="Şifrenizi doğrulayın" className="w-full bg-[#101010] border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
+                                                <input type="password" placeholder="Şifrenizi doğrulayın" className="w-full bg-brand-input border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-gold/50 transition-colors" />
                                             </div>
                                         </div>
 
@@ -321,7 +327,7 @@ export function Profile() {
 
                             {(activeTab === "bildirimler" || activeTab === "gizlilik") && (
                                 <div
-                                    className="bg-[#1A1A1A] border border-white/5 rounded-3xl p-8"
+                                    className="bg-brand-surface border border-white/5 rounded-3xl p-8"
                                 >
                                     <div className="flex flex-col items-center justify-center text-center py-12">
                                         <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">

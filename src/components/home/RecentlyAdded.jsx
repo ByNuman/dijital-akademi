@@ -1,9 +1,9 @@
 import { useCourses } from "../../context/CoursesContext";
 import { Link } from "react-router-dom";
 import { useLibrary } from "../../context/LibraryContext";
-import { PlayCircle, FileText, CheckCircle2, Headphones, Presentation } from "lucide-react";
+import { PlayCircle, FileText, CheckCircle2, Headphones, Presentation, Clock, ArrowRight } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -12,7 +12,7 @@ export function RecentlyAdded() {
     const { courses, loading } = useCourses();
     const { isCourseInLibrary } = useLibrary();
     
-    // Tüm kursları en yeni eklenene göre sırala (tarihe göre yoksa olduğu gibi tersine çevir)
+    // Sort courses by creation date or reverse first 10
     const sortedCourses = [...courses].sort((a, b) => {
         const getTimestamp = (c) => {
             const dateStr = c.createdAt || c.created_at;
@@ -24,17 +24,15 @@ export function RecentlyAdded() {
         };
         const timeA = getTimestamp(a);
         const timeB = getTimestamp(b);
-        if (timeA === 0 && timeB === 0) return 0; // Eğer hiçbiri yoksa orijinal sıracı bozma (sonradan reverse yapacağız)
         return timeB - timeA;
     });
     
-    // Eğer tüm kurslarda tarih bilgisi yoksa (eski verilerse), varsayılan olarak son eklenenleri başa almak için ters çevir
     const hasDates = courses.some(c => c.createdAt || c.created_at);
     if (!hasDates) {
         sortedCourses.reverse();
     }
 
-    // Sıralanmış kurslardaki tüm modülleri düzleştir (flatMap) ve her modüle kurs bilgilerini ekle
+    // Flatten modules from sorted courses
     const allModules = sortedCourses.flatMap(course => 
         (course.modules || []).map((mod, index) => ({
             ...mod,
@@ -46,21 +44,20 @@ export function RecentlyAdded() {
         }))
     );
 
-    // En son eklenen kursların modülleri en başta olduğu için ilk 7'sini al
-    const recentModules = allModules.slice(0, 7);
+    const recentModules = allModules.slice(0, 10);
 
     return (
-        <section className="py-24 bg-[#141414] relative border-y border-white/5" id="son-eklenenler">
-            <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
+        <section className="py-24 bg-brand-black relative" id="son-eklenenler">
+            <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none animate-float"></div>
 
             <div className="container mx-auto px-6 md:px-12 relative z-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
                     <div className="max-w-2xl">
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-brand-slate border border-white/10 text-brand-gold text-sm font-semibold mb-6">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-brand-black border border-brand-gold/20 text-brand-gold text-sm font-semibold mb-6 shadow-[0_0_15px_rgba(212,175,55,0.15)]">
                             Yeni İçerikler
                         </div>
                         <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
-                            Son Eklenen <span className="text-brand-gold">Konular</span>
+                            Son Eklenen <span className="text-gold-gradient font-serif italic tracking-tight">Konular</span>
                         </h2>
                         <p className="text-gray-400 text-lg">
                             Akademimize yeni katılan eğitim programlarının en güncel konularını keşfedin.
@@ -79,85 +76,80 @@ export function RecentlyAdded() {
                         </div>
                     ) : (
                         <Swiper
-                            modules={[Navigation, Pagination]}
-                            spaceBetween={32}
+                            modules={[Navigation, Pagination, Autoplay]}
+                            spaceBetween={40}
                             slidesPerView={1}
                             navigation
                             pagination={{ clickable: true }}
+                            autoplay={{
+                                delay: 5000,
+                                disableOnInteraction: false,
+                            }}
                             breakpoints={{
-                                640: { slidesPerView: 1 },
-                                768: { slidesPerView: 2 },
+                                640: { slidesPerView: 2 },
                                 1024: { slidesPerView: 3 },
                             }}
-                            className="pb-16 pt-4 px-2 sm:px-12 -mx-2 sm:-mx-12 !overflow-visible"
+                            className="pb-16 pt-4 !overflow-visible"
                         >
-                            {recentModules.map((mod, index) => (
-                                <SwiperSlide key={mod.id || index} className="h-auto px-2">
+                            {recentModules.map((mod, idx) => (
+                                <SwiperSlide key={`${mod.courseId}-${mod.title}-${idx}`} className="h-auto">
                                     <Link 
-                                        to={isCourseInLibrary(mod.courseId) ? `/learn/${mod.courseId}?lesson=${mod.lessonNum}` : `/course/${mod.courseId}`} 
-                                        className="group block bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden hover:border-brand-gold/30 transition-all duration-300 hover:shadow-2xl hover:shadow-brand-gold/10 h-full flex flex-col"
+                                        to={`/learn/${mod.courseId}?lesson=${mod.lessonNum}`} 
+                                        className="group block bg-[#121212] rounded-2xl border border-white/5 overflow-hidden hover:border-brand-gold/40 transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4),0_0_20px_rgba(212,175,55,0.1)] h-full flex flex-col transform hover:-translate-y-2"
                                     >
+                                        {/* Card Image Wrapper */}
                                         <div className="relative aspect-video overflow-hidden">
-                                            {mod.courseImage ? (
+                                            {mod.imageUrl || mod.courseImage ? (
                                                 <img 
-                                                    src={mod.courseImage} 
-                                                    alt={mod.courseTitle}
-                                                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                                                    src={mod.imageUrl || mod.courseImage} 
+                                                    alt={mod.title}
+                                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full bg-gradient-to-br from-[#222] to-[#111]"></div>
+                                                <div className="w-full h-full bg-gradient-to-br from-brand-black to-[#222]"></div>
                                             )}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+                                            
+                                            {/* Gradient Overlay */}
+                                            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-brand-black via-brand-black/40 to-transparent"></div>
+                                            
+                                            {/* Duration Badge */}
+                                            <div className="absolute bottom-4 right-4 bg-brand-black/80 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full flex items-center gap-1.5 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                                                <Clock className="w-3 h-3 text-brand-gold" />
+                                                <span className="text-[10px] text-white/90 font-medium tracking-wide">{mod.duration}</span>
+                                            </div>
+
+                                            {/* Category Badge */}
                                             <div className="absolute top-4 left-4">
-                                                <span className="bg-black/60 backdrop-blur-md border border-white/10 text-brand-gold px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
-                                                    {mod.courseCategory}
+                                                <span className="bg-brand-gold/20 backdrop-blur-md border border-brand-gold/30 text-brand-gold text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                                                    {mod.courseCategory || 'Eğitim'}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="p-6 flex flex-col flex-1 relative">
-                                            <div className="absolute top-0 right-6 -translate-y-1/2">
-                                                <span className="bg-brand-gold text-brand-black px-4 py-1 rounded-full text-xs font-bold shadow-lg">
-                                                    Ders {index + 1}
+                                        {/* Content */}
+                                        <div className="p-6 flex-1 flex flex-col">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <div className="w-6 h-px bg-brand-gold/40"></div>
+                                                <span className="text-brand-gold text-[10px] font-bold uppercase tracking-widest opacity-80">
+                                                    Ders {mod.lessonNum}
                                                 </span>
                                             </div>
                                             
-                                            <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 mt-2 group-hover:text-brand-gold transition-colors">
+                                            <h3 className="text-white font-bold text-lg mb-2 group-hover:text-brand-gold transition-colors line-clamp-2 leading-tight">
                                                 {mod.title}
                                             </h3>
                                             
-                                            <p className="text-gray-400 text-sm mb-6 line-clamp-1 italic">
+                                            <p className="text-gray-500 text-xs mb-6 line-clamp-1 italic">
                                                 {mod.courseTitle}
                                             </p>
                                             
-                                            <div className="mt-auto px-2">
-                                                <div className="h-px w-full bg-white/5 mb-4"></div>
-                                                <div className="flex items-center gap-4 text-xs font-medium">
-                                                    {mod.pdfUrl && (
-                                                        <div className="flex items-center gap-1.5 text-red-400">
-                                                            <FileText className="w-3.5 h-3.5" />
-                                                            <span>PDF</span>
-                                                        </div>
-                                                    )}
-                                                    {mod.slideUrl && (
-                                                        <div className="flex items-center gap-1.5 text-blue-400">
-                                                            <Presentation className="w-3.5 h-3.5" />
-                                                            <span>Slayt</span>
-                                                        </div>
-                                                    )}
-                                                    {mod.audioUrl && (
-                                                        <div className="flex items-center gap-1.5 text-purple-400">
-                                                            <Headphones className="w-3.5 h-3.5" />
-                                                            <span>Ses</span>
-                                                        </div>
-                                                    )}
-                                                    {mod.questions?.length > 0 && (
-                                                        <div className="flex items-center gap-1.5 text-emerald-400">
-                                                            <CheckCircle2 className="w-3.5 h-3.5" />
-                                                            <span>Sorular</span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                            {/* Action Label */}
+                                            <div className="flex items-center gap-2 text-brand-gold text-sm font-bold group/btn mt-auto py-2">
+                                                <span className="relative">
+                                                    {isCourseInLibrary(mod.courseId) ? 'Hemen Öğren' : 'Detayları İncele'}
+                                                    <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-brand-gold transition-all duration-300 group-hover:w-full"></span>
+                                                </span>
+                                                <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1.5 transition-transform duration-300" />
                                             </div>
                                         </div>
                                     </Link>

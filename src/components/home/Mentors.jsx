@@ -29,15 +29,15 @@ const mentors = [
 
 export function Mentors() {
     return (
-        <section className="py-24 bg-[#101010] relative overflow-hidden" id="mentors">
+        <section className="py-24 bg-brand-black relative overflow-hidden" id="mentors">
             {/* Background elements */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none translate-y-1/2 -translate-x-1/2"></div>
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2 animate-float"></div>
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none translate-y-1/2 -translate-x-1/2 animate-float" style={{ animationDelay: '2s' }}></div>
 
             <div className="container mx-auto px-6 md:px-12 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
                     <h2 className="text-4xl md:text-5xl font-black text-white">
-                        Uzman <span className="bg-gradient-to-r from-brand-gold to-yellow-200 bg-clip-text text-transparent">Eğitmenlerimiz</span>
+                        Uzman <span className="text-gold-gradient font-serif italic tracking-tight">Eğitmenlerimiz</span>
                     </h2>
                     <p className="text-gray-400 text-lg">
                         Alanında uzman, yenilikçi ve deneyimli akademisyenlerimizle ufkunuzu açacak eğitimler alın. İlim yolculuğunuzda en güvenilir rehberlerle tanışın.
@@ -48,10 +48,10 @@ export function Mentors() {
                     {mentors.map((mentor, index) => (
                         <div key={index} className="group relative">
                             {/* Card with subtle glowing border effect on hover */}
-                            <div className="relative rounded-3xl bg-[#141414] border border-white/5 overflow-hidden transition-all duration-500 hover:border-brand-gold/40 hover:-translate-y-2 hover:shadow-[0_15px_40px_-15px_rgba(251,191,36,0.3)]">
+                            <div className="relative rounded-3xl bg-brand-slate border border-white/5 overflow-hidden transition-all duration-500 hover:border-brand-gold/30 hover:-translate-y-2 hover:shadow-[0_15px_40px_-15px_rgba(212,175,55,0.25)]">
                                 {/* Image Container */}
                                 <div className="aspect-[4/5] overflow-hidden relative">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent z-10"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-t from-brand-slate via-transparent to-transparent z-10"></div>
                                     <img 
                                         src={mentor.image} 
                                         alt={mentor.name}
@@ -69,7 +69,7 @@ export function Mentors() {
                                 </div>
                                 {/* Content */}
                                 <div className="p-6 relative z-20 -mt-16">
-                                    <div className="inline-block bg-[#1A1A1A] px-4 py-1.5 rounded-full border border-white/10 mb-3 shadow-lg">
+                                    <div className="inline-block bg-brand-black px-4 py-1.5 rounded-full border border-brand-gold/20 mb-3 shadow-[0_0_10px_rgba(212,175,55,0.1)]">
                                         <span className="text-brand-gold text-xs font-bold uppercase tracking-wider">{mentor.role}</span>
                                     </div>
                                     <h3 className="text-xl font-bold text-white mb-2 group-hover:text-brand-gold transition-colors">{mentor.name}</h3>

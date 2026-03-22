@@ -17,8 +17,7 @@ const Login = React.lazy(() => import('./pages/Login'));
 const Register = React.lazy(() => import('./pages/Register'));
 const Profile = React.lazy(() => import('./pages/Profile'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
-const Community = React.lazy(() => import('./pages/Community'));
-const Blog = React.lazy(() => import('./pages/Blog'));
+
 const About = React.lazy(() => import('./pages/About'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 
@@ -55,8 +54,8 @@ function App() {
               <Route path="/course" element={<Navigate to="/courses" replace />} />
               <Route path="/course/:id" element={<PageTransition><CourseDetail /></PageTransition>} />
               <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-              <Route path="/community" element={<PageTransition><Community /></PageTransition>} />
-              <Route path="/blog" element={<PageTransition><Blog /></PageTransition>} />
+
+              <Route path="/leaderboard" element={<PageTransition><Leaderboard /></PageTransition>} />
               <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
               <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
 
@@ -72,7 +71,6 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route path="/dashboard" element={<PageTransition><Dashboard /></PageTransition>} />
                 <Route path="/profile" element={<PageTransition><Profile /></PageTransition>} />
-                <Route path="/leaderboard" element={<PageTransition><Leaderboard /></PageTransition>} />
               </Route>
 
               {/* Admin Routes */}

@@ -40,7 +40,7 @@ export function Courses() {
     });
 
     return (
-        <div className="pt-24 pb-24 min-h-screen">
+        <div className="pt-24 pb-24 min-h-screen bg-brand-black">
             <Helmet>
                 <title>Tüm Eğitimler - Dijital Akademi</title>
                 <meta name="description" content="Tefsir, Fıkıh, Kelam, Arapça ve daha birçok İslami ilimler eğitimine ücretsiz erişin." />
@@ -53,8 +53,8 @@ export function Courses() {
                 </div>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                     <div>
-                        <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
-                            Ders <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-gold-dark">Kataloğu</span>
+                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
+                            Ders <span className="text-gold-gradient font-serif italic tracking-tight">Kataloğu</span>
                         </h1>
                         <p className="text-gray-400">Akademik gelişiminiz için özenle hazırlanmış dersleri keşfedin.</p>
                     </div>
@@ -68,7 +68,7 @@ export function Courses() {
                             placeholder="Ders veya eğitmen ara..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-[#1A1A1A] border border-white/10 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-brand-gold/50 focus:ring-1 focus:ring-brand-gold/50 transition-all placeholder:text-gray-600"
+                            className="w-full bg-brand-slate border border-brand-gold/10 text-white rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:border-brand-gold/50 focus:ring-1 focus:ring-brand-gold/50 transition-all placeholder:text-gray-600"
                         />
                     </div>
                 </div>
@@ -84,8 +84,8 @@ export function Courses() {
                             key={category}
                             onClick={() => setSelectedCategory(category)}
                             className={`px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 ${selectedCategory === category
-                                ? "bg-brand-gold text-brand-black shadow-[0_0_15px_rgba(251,191,36,0.3)]"
-                                : "bg-[#1A1A1A] text-gray-400 border border-white/5 hover:border-brand-gold/30 hover:text-white"
+                                ? "bg-brand-gold text-brand-black shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+                                : "bg-brand-slate text-gray-400 border border-white/5 hover:border-brand-gold/30 hover:text-white"
                                 }`}
                         >
                             {category}
@@ -110,7 +110,7 @@ export function Courses() {
                                     initial={{ opacity: 0, y: 20 }}
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
-                                    className="bg-[#1A1A1A] rounded-2xl border border-white/5 overflow-hidden group hover:border-brand-gold/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(251,191,36,0.1)] flex flex-col h-full"
+                                    className="bg-brand-slate rounded-2xl border border-white/5 overflow-hidden group hover:border-brand-gold/30 transition-all duration-500 hover:shadow-[0_4px_25px_rgba(212,175,55,0.15)] flex flex-col h-full"
                                 >
                                     <div className="relative h-48 overflow-hidden">
                                         <div className="absolute inset-0 bg-brand-black/20 mix-blend-multiply z-10"></div>
@@ -161,7 +161,7 @@ export function Courses() {
                                                                 initial={{ width: 0 }}
                                                                 animate={{ width: `${currentProgress}%` }}
                                                                 transition={{ duration: 1, ease: "easeOut" }}
-                                                                className="h-full bg-brand-gold shadow-[0_0_10px_rgba(251,191,36,0.5)]"
+                                                                className="h-full bg-brand-gold shadow-[0_0_10px_rgba(212,175,55,0.5)]"
                                                             />
                                                         </div>
                                                     </>

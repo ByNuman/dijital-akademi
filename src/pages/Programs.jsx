@@ -34,7 +34,7 @@ export function Programs() {
                 </div>
                 <div className="max-w-5xl mx-auto">
                     {/* Hero Section of Program */}
-                    <div className="relative rounded-[2rem] overflow-hidden mb-16 border border-white/5 bg-[#111111] p-8 md:p-12 shadow-2xl">
+                    <div className="relative rounded-[2rem] overflow-hidden mb-16 border border-white/5 bg-brand-input p-8 md:p-12 shadow-2xl">
                         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-gold/5 to-transparent pointer-events-none"></div>
                         
                         <div className="relative z-10 flex flex-col lg:flex-row gap-12 items-center">
@@ -42,7 +42,7 @@ export function Programs() {
                                 <span className="inline-block px-4 py-1 rounded-full bg-brand-gold/10 text-brand-gold text-sm font-bold mb-6 tracking-wider uppercase">
                                     Kapsamlı Eğitim Programı
                                 </span>
-                                <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">
+                                <h1 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 leading-tight">
                                     Dijital Dönüşüm & <br />
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-gold-dark">
                                         Yazılım Akademisi
@@ -65,7 +65,7 @@ export function Programs() {
                             </div>
                             
                             <div className="w-full lg:w-80 shrink-0">
-                                <div className="bg-[#1A1A1A] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
+                                <div className="bg-brand-surface border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden group">
                                     <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                     <h3 className="text-white font-bold mb-6 border-b border-white/5 pb-4 relative z-10">Program Bilgileri</h3>
                                     <div className="space-y-6 relative z-10">
@@ -93,7 +93,7 @@ export function Programs() {
                             { title: "Mentor Desteği", desc: "Ödevleriniz ve projeleriniz için uzman mentorlardan birebir geri bildirim." },
                             { title: "Proje Bazlı", desc: "Gerçek dünya senaryolarına dayanan bitirme projesi ile portfolyo oluşturun." }
                         ].map((item, i) => (
-                            <div key={i} className="bg-[#111111] border border-white/5 rounded-2xl p-8 hover:border-brand-gold/20 transition-all duration-300">
+                            <div key={i} className="bg-brand-input border border-white/5 rounded-2xl p-8 hover:border-brand-gold/20 transition-all duration-300">
                                 <h4 className="text-brand-gold font-bold mb-4 text-lg">{item.title}</h4>
                                 <p className="text-gray-400 leading-relaxed">{item.desc}</p>
                             </div>

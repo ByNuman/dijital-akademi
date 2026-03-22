@@ -1,6 +1,7 @@
 
 import { Helmet } from 'react-helmet-async';
 import { BookOpen, Clock, Calendar, PlayCircle, Trophy, Settings, SearchX, Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { BackButton } from "../components/ui/BackButton";
@@ -21,7 +22,7 @@ export function Dashboard() {
     const xpProgress = ((xp % 500) / 500) * 100;
 
     return (
-        <div className="pt-24 pb-20 min-h-screen">
+        <div className="pt-24 pb-20 min-h-screen bg-brand-black">
             <Helmet>
                 <title>Öğrenci Paneli - Dijital Akademi</title>
                 <meta name="description" content="İslami ilimler derslerinize Kaldığınız yerden devam edin." />
@@ -35,25 +36,35 @@ export function Dashboard() {
                 </div>
 
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-12 bg-[#1A1A1A] p-8 rounded-3xl border border-white/5">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 mb-12 bg-brand-slate p-8 rounded-3xl border border-brand-gold/10"
+                >
                     <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/50 p-1 overflow-hidden shadow-[0_0_20px_rgba(251,191,36,0.2)] flex items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#111] shrink-0">
+                        <div className="w-24 h-24 rounded-full border-4 border-brand-gold/50 p-1 overflow-hidden shadow-[0_4px_20px_rgba(212,175,55,0.2)] flex items-center justify-center bg-gradient-to-br from-brand-slate to-brand-black shrink-0">
                             {userData?.avatar ? (
                                 <img src={userData.avatar} alt={userData?.name || "Öğrenci"} className="w-full h-full rounded-full object-cover" />
                             ) : (
-                                <span className="text-4xl font-bold text-brand-gold uppercase drop-shadow-[0_2px_8px_rgba(251,191,36,0.3)]">
+                                <span className="text-4xl font-bold text-brand-gold uppercase drop-shadow-[0_2px_8px_rgba(212,175,55,0.3)]">
                                     {userData?.name ? userData.name.split(' ').filter(Boolean).map((n, i, arr) => (i === 0 || i === arr.length - 1 ? n[0] : '')).join('') : 'U'}
                                 </span>
                             )}
                         </div>
                         <div className="text-center md:text-left">
-                            <h1 className="text-3xl font-black text-white mb-2">Hoş Geldiniz, <span className="text-brand-gold">{userData?.name || "Öğrenci"}</span></h1>
+                            <h1 className="text-3xl font-serif font-bold text-white mb-2">Hoş Geldiniz, <span className="text-brand-gold">{userData?.name || "Öğrenci"}</span></h1>
                             <p className="text-gray-400">İlim yolculuğunuzda bugün nerede kalmıştık?</p>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+                >
                     {/* Main Content - Enrolled Courses */}
                     <div className="lg:col-span-2 space-y-8">
                         <div>
@@ -66,7 +77,7 @@ export function Dashboard() {
                                     savedCourses.map((course, index) => (
                                         <div
                                             key={course.id}
-                                            className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6 flex flex-col sm:flex-row gap-6 group hover:border-brand-gold/30 transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                            className="bg-brand-slate rounded-2xl border border-white/5 p-6 flex flex-col sm:flex-row gap-6 group hover:border-brand-gold/30 transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.5)]"
                                         >
                                             {/* Course Image */}
                                             <div className="w-full sm:w-48 h-32 rounded-xl overflow-hidden shrink-0 relative">
@@ -122,7 +133,7 @@ export function Dashboard() {
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="bg-[#1A1A1A] border border-white/5 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center">
+                                    <div className="bg-brand-slate border border-brand-gold/10 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center">
                                         <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
                                             <SearchX className="w-8 h-8 text-gray-500" />
                                         </div>
@@ -141,44 +152,41 @@ export function Dashboard() {
                     <div className="lg:col-span-1 space-y-8">
                         {/* Gamification Level Box */}
                         <div
-                            className="bg-gradient-to-br from-[#1A1A1A] to-[#111] rounded-2xl border border-brand-gold/20 p-6 relative overflow-hidden shadow-[0_0_30px_rgba(251,191,36,0.1)]"
+                            className="bg-brand-black rounded-2xl border border-brand-gold/10 p-6 relative overflow-hidden group hover:border-brand-gold/30 transition-all duration-500 shadow-2xl hover:shadow-[0_4px_30px_rgba(212,175,55,0.15)]"
                         >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/10 blur-[50px] rounded-full pointer-events-none"></div>
-
-                            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 relative z-10">
-                                <Trophy className="w-5 h-5 text-brand-gold" />
-                                Öğrenim Akademisi
-                            </h3>
-
-                            <div className="flex items-center justify-between mb-2 relative z-10">
-                                <div className="text-gray-400 text-sm font-medium">Mevcut Seviye</div>
-                                <div className="bg-brand-gold text-brand-black text-xs font-black px-2 py-0.5 rounded-md">Lvl {currentLevel}</div>
+                            <div className="flex items-center justify-between mb-8 relative z-10">
+                                <div>
+                                    <div className="text-gray-600 text-[10px] uppercase tracking-[0.2em] mb-1.5 font-bold font-secondary">Mevcut Seviye</div>
+                                    <div className="text-xl font-black text-white/90 uppercase tracking-tight">Seviye {currentLevel}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-gray-600 text-[10px] uppercase tracking-[0.2em] mb-1.5 font-bold font-secondary">Toplam Puan</div>
+                                    <div className="text-xl font-black text-brand-gold tabular-nums">{xp.toLocaleString()} <span className="text-[10px] text-brand-gold/40 ml-0.5">XP</span></div>
+                                </div>
                             </div>
 
-                            <div className="text-4xl font-black text-white mb-4 relative z-10">{xp} <span className="text-base text-brand-gold font-bold">XP</span></div>
-
-                            <div className="mb-6 relative z-10">
-                                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                    <span>Seviye {currentLevel}</span>
-                                    <span>{xpForNextLevel} XP</span>
+                            <div className="mb-8 relative z-10">
+                                <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                                    <span className="text-brand-gold/60">{xp % 500} / 500 XP</span>
+                                    <span>Sonraki Seviye</span>
                                 </div>
-                                <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
+                                <div className="w-full bg-white/[0.03] rounded-full h-1.5 overflow-hidden border border-white/5">
                                     <div
-                                        className="bg-gradient-to-r from-brand-gold to-yellow-200 h-full rounded-full transition-all duration-700"
+                                        className="bg-brand-gold h-full rounded-full transition-all duration-700 shadow-[0_4px_10px_rgba(212,175,55,0.3)]"
                                         style={{ width: `${xpProgress}%` }}
                                     />
                                 </div>
                             </div>
 
                             <Link to="/leaderboard" className="relative z-10 w-full block">
-                                <Button variant="outline" className="w-full border-brand-gold/30 text-brand-gold hover:bg-brand-gold/10 shadow-[0_0_15px_rgba(251,191,36,0.15)] flex justify-center py-2 min-h-0 text-sm">
-                                    Liderlik Tablosunu Gör
+                                <Button variant="outline" className="w-full border-white/10 text-gray-400 hover:border-brand-gold/30 hover:text-brand-gold hover:bg-brand-gold/[0.03] transition-all duration-300 py-2.5 min-h-0 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                    Sıralamayı Görüntüle
                                 </Button>
                             </Link>
                         </div>
 
                         {/* Stats Box */}
-                        <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6 md:mt-0 mt-8">
+                        <div className="bg-brand-slate rounded-2xl border border-brand-gold/10 p-6 md:mt-0 mt-8">
                             <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                                 İstatistiklerim
                             </h3>
@@ -195,7 +203,7 @@ export function Dashboard() {
                         </div>
 
                         {/* Upcoming Events Box */}
-                        <div className="bg-[#1A1A1A] rounded-2xl border border-white/5 p-6 md:mt-0 mt-8">
+                        <div className="bg-brand-slate rounded-2xl border border-brand-gold/10 p-6 md:mt-0 mt-8">
                             <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
                                 <Calendar className="w-5 h-5 text-brand-gold" />
                                 Akademik Takvim
@@ -242,7 +250,7 @@ export function Dashboard() {
                         </div>
                     </div>
 
-                </div>
+                </motion.div>
             </div>
         </div>
     );

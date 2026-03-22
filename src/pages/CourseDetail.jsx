@@ -92,13 +92,13 @@ export function CourseDetail() {
     }
 
     return (
-        <div className="pt-24 pb-20 min-h-screen">
+        <div className="pt-24 pb-20 min-h-screen bg-brand-black">
             <Helmet>
                 <title>{course.title} - Dijital Akademi</title>
                 <meta name="description" content={`Dijital Akademi'de ${course.title} dersini ücretsiz olarak inceleyin ve hemen öğrenmeye başlayın.`} />
             </Helmet>
             {/* Header Hero Area */}
-            <div className="relative bg-[#1A1A1A] py-16 md:py-24 border-b border-white/5">
+            <div className="relative bg-brand-slate py-16 md:py-24 border-b border-brand-gold/10">
                 <div className="absolute inset-0 overflow-hidden z-0">
                     <img src={course.image} alt={course.title} className="w-full h-full object-cover opacity-20 blur-sm mix-blend-overlay" />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-[#101010]/80 to-transparent"></div>
@@ -159,7 +159,7 @@ export function CourseDetail() {
                     <div className="lg:col-span-2">
                         {/* Özelleştirilebilir "Ne Öğreneceksiniz" Box */}
                         {course.learningOutcomes && course.learningOutcomes.length > 0 && (
-                            <div className="bg-[#1A1A1A] border border-white/5 rounded-2xl p-6 md:p-8 mb-10">
+                            <div className="bg-brand-slate border border-brand-gold/10 rounded-2xl p-6 md:p-8 mb-10 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
                                 <h3 className="text-2xl font-bold text-white mb-6">Bu Derste Neler Öğreneceksiniz?</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {course.learningOutcomes.map((item, i) => (
@@ -190,7 +190,7 @@ export function CourseDetail() {
                                 </div>
                             ) : (
                                 modules.map((module, index) => (
-                                    <div key={module.id || `mod-${index}`} className="bg-[#1A1A1A] border border-white/5 rounded-xl overflow-hidden">
+                                    <div key={module.id || `mod-${index}`} className="bg-brand-slate border border-white/5 rounded-xl overflow-hidden hover:border-brand-gold/20 transition-colors">
                                         <div className="flex items-center justify-between p-6">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold font-bold shrink-0">
@@ -217,14 +217,14 @@ export function CourseDetail() {
 
                     {/* Right Sidebar - Sticky Enroll Card */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-32 bg-[#1A1A1A] border border-white/10 rounded-2xl p-6 shadow-2xl">
+                        <div className="sticky top-32 bg-brand-slate border border-brand-gold/10 rounded-2xl p-6 shadow-2xl">
                             {/* Ders Resmi (video yerine) */}
                             <div className="aspect-video bg-black rounded-lg mb-6 relative overflow-hidden border border-white/5">
                                 <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
                             </div>
 
                             <Link to={`/learn/${course.id}`} onClick={handleStartCourse}>
-                                <Button variant="primary" className="w-full justify-center py-4 text-lg font-bold mb-4 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.5)]">
+                                <Button variant="primary" className="w-full justify-center py-4 text-lg font-bold mb-4 shadow-[0_4px_20px_rgba(212,175,55,0.3)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.5)]">
                                     Hemen Eğitime Başla
                                 </Button>
                             </Link>

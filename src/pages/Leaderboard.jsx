@@ -1,148 +1,189 @@
-
-import { Trophy, Medal, Star, ChevronUp, ChevronDown, Minus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trophy, Medal, Crown, Star, ArrowUp, User as UserIcon } from "lucide-react";
+import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 import { useLibrary } from "../context/LibraryContext";
-import { studentData } from "../data/studentData";
+import { collection, query, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 export function Leaderboard() {
+    const { currentUser, userData } = useAuth();
     const { xp } = useLibrary();
-    const currentLevel = Math.floor(xp / 500) + 1;
+    const [topStudents, setTopStudents] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock students for the leaderboard
-    const getMockStudents = () => {
-        const students = [
-            { id: 1, name: "Ayşe K.", xp: 3250, badge: "Altın", avatar: "https://ui-avatars.com/api/?name=Ayşe+K&background=F59E0B&color=000" },
-            { id: 2, name: "Mehmet Ç.", xp: 2800, badge: "Gümüş", avatar: "https://ui-avatars.com/api/?name=Mehmet+C&background=94A3B8&color=000" },
-            { id: 3, name: "Zeynep B.", xp: 2150, badge: "Bronz", avatar: "https://ui-avatars.com/api/?name=Zeynep+B&background=B45309&color=fff" },
-            { id: 5, name: "Ali R.", xp: 850, badge: "Öğrenci", avatar: "https://ui-avatars.com/api/?name=Ali+R&background=333&color=fff" },
-            { id: 6, name: "Fatma S.", xp: 620, badge: "Öğrenci", avatar: "https://ui-avatars.com/api/?name=Fatma+S&background=333&color=fff" },
-        ];
+    useEffect(() => {
+        const usersRef = collection(db, "users");
+        // XP'ye göre sırala, adminleri de dahil edebiliriz ama genellikle öğrenciler yarışır
+        const q = query(usersRef, orderBy("xp", "desc"), limit(20));
 
-        // Push the current user
-        students.push({
-            id: 4,
-            name: studentData.name + " (Sen)",
-            xp: xp,
-            badge: currentLevel >= 5 ? "Altın" : currentLevel >= 3 ? "Gümüş" : "Öğrenci",
-            avatar: studentData.avatar,
-            isCurrentUser: true
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const users = snapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }))
+                .filter(user => user.role !== "admin"); // Adminleri gizle
+            
+            setTopStudents(users);
+            setLoading(false);
+        }, (error) => {
+            console.error("Leaderboard fetch error:", error);
+            setLoading(false);
         });
 
-        // Sort by XP descending
-        return students.sort((a, b) => b.xp - a.xp);
-    };
+        return () => unsubscribe();
+    }, []);
 
-    const leaderboardData = getMockStudents();
+    // Kullanıcının sırasını bul (mevcut listede varsa)
+    const userRankInList = topStudents.findIndex(s => s.id === currentUser?.uid) + 1;
+    const currentLevel = Math.floor((userData?.xp || xp || 0) / 500) + 1;
 
-    // Find current user rank
-    const currentUserRank = leaderboardData.findIndex(s => s.isCurrentUser) + 1;
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-brand-black flex items-center justify-center">
+                <div className="w-12 h-12 border-2 border-brand-gold/20 border-t-brand-gold rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
     return (
-        <div className="pt-24 pb-20 min-h-screen">
-            <div className="container mx-auto px-6 md:px-12 max-w-5xl">
-
-                {/* Header Graphic */}
-                <div className="text-center mb-12 relative pb-10">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-brand-gold/20 blur-[60px] rounded-full pointer-events-none"></div>
-                    <div
-                        className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-tr from-brand-gold to-yellow-200 rounded-full mb-6 shadow-[#FBBF24]/20 shadow-2xl relative z-10"
-                    >
-                        <Trophy className="w-12 h-12 text-brand-black" />
+        <div className="min-h-screen bg-brand-black text-white pt-32 pb-20 px-6">
+            <Helmet>
+                <title>Sıralama - Dijital Akademi</title>
+                <meta name="description" content="En başarılı öğrenciler arasında yerini al. XP kazan ve zirveye tırman!" />
+            </Helmet>
+            <div className="max-w-4xl mx-auto">
+                {/* Header */}
+                <div className="text-center mb-16">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-gold/5 border border-brand-gold/10 mb-6 group transition-all duration-500 hover:border-brand-gold/30">
+                        <Trophy className="w-8 h-8 text-brand-gold transition-transform duration-500 group-hover:scale-110" />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-white mb-4 relative z-10">Akademi Liderlik Tablosu</h1>
-                    <p className="text-gray-400 text-lg max-w-2xl mx-auto relative z-10">Eğitimleri tamamla, testleri çöz, XP kazan ve akademinin en başarılı öğrencileri arasında adını yazdır.</p>
+                    <h1 className="text-3xl md:text-5xl font-serif font-bold mb-4 tracking-tight">Akademi Sıralaması</h1>
+                    <p className="text-gray-500 max-w-lg mx-auto text-sm md:text-base">
+                        En başarılı öğrenciler arasında yerini al. Her gün yeni XP'ler kazan ve zirveye tırman!
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                    {/* User's Stats Card */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-gradient-to-b from-[#1A1A1A] to-[#101010] border border-brand-gold/30 rounded-3xl p-8 sticky top-28 shadow-[0_0_30px_rgba(251,191,36,0.05)]">
-                            <div className="text-center">
-                                <div className="w-24 h-24 rounded-full border-4 border-brand-gold mx-auto p-1 mb-4 relative">
-                                    <img src={studentData.avatar} alt="Profile" className="w-full h-full rounded-full object-cover" />
-                                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-brand-gold text-brand-black text-xs font-black px-3 py-1 rounded-full border-2 border-[#1A1A1A]">
-                                        Lvl {currentLevel}
-                                    </div>
+                {/* Current User Stats */}
+                {currentUser && userData?.role !== 'admin' && (
+                    <div className="bg-brand-slate border border-brand-gold/10 rounded-2xl p-6 mb-12 flex flex-wrap items-center justify-between gap-6 hover:border-brand-gold/30 transition-all duration-500 shadow-[0_4px_25px_rgba(0,0,0,0.5)]">
+                        <div className="flex items-center gap-5">
+                            <div className="relative">
+                                <div className="w-14 h-14 rounded-xl overflow-hidden border border-brand-gold/50 bg-brand-slate shadow-[0_4px_10px_rgba(212,175,55,0.2)]">
+                                    {userData?.avatar ? (
+                                        <img src={userData.avatar} alt={userData.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <UserIcon className="w-6 h-6 text-brand-gold/70" />
+                                        </div>
+                                    )}
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-1">{studentData.name}</h3>
-                                <p className="text-gray-400 text-sm mb-6">Mevcut İlerlemen</p>
+                                <div className="absolute -top-2 -right-2 bg-brand-gold text-[#000] text-[10px] font-black px-1.5 py-0.5 rounded-md shadow-lg scale-90">
+                                    SİZ
+                                </div>
                             </div>
-
-                            <div className="space-y-4">
-                                <div className="bg-white/5 rounded-xl p-4 flex justify-between items-center border border-white/5">
-                                    <div className="text-gray-400 text-sm">Toplam XP</div>
-                                    <div className="text-brand-gold font-black text-xl">{xp}</div>
-                                </div>
-                                <div className="bg-white/5 rounded-xl p-4 flex justify-between items-center border border-white/5">
-                                    <div className="text-gray-400 text-sm">Akademi Sırası</div>
-                                    <div className="text-white font-black text-xl">#{currentUserRank}</div>
-                                </div>
-                                <div className="bg-white/5 rounded-xl p-4 flex justify-between items-center border border-white/5">
-                                    <div className="text-gray-400 text-sm">Sonraki Seviye</div>
-                                    <div className="text-gray-300 font-bold">{currentLevel * 500 - xp} XP</div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white/90">{userData?.name || "Kullanıcı"}</h3>
+                                <p className="text-brand-gold/60 text-xs font-semibold uppercase tracking-widest">SEVİYE {currentLevel}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-8">
+                            <div className="text-right">
+                                <div className="text-gray-600 text-[10px] uppercase tracking-widest mb-0.5">TOPLAM PUAN</div>
+                                <div className="text-xl font-bold text-brand-gold">{(userData?.xp || xp || 0).toLocaleString()} <span className="text-[10px] text-brand-gold/50 ml-0.5">XP</span></div>
+                            </div>
+                            <div className="text-right pl-8 border-l border-white/5">
+                                <div className="text-gray-600 text-[10px] uppercase tracking-widest mb-0.5">SIRALAMA</div>
+                                <div className="text-xl font-bold text-white/90">
+                                    {userRankInList > 0 ? `#${userRankInList}` : "-"}
                                 </div>
                             </div>
                         </div>
                     </div>
+                )}
 
-                    {/* Leaderboard Table */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-[#1A1A1A] border border-white/5 rounded-3xl overflow-hidden">
-                            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
-                                <h2 className="text-xl font-bold text-white">Bu Haftanın En İyileri</h2>
-                                <span className="text-xs font-semibold px-3 py-1 bg-brand-gold/10 text-brand-gold rounded-full">Canlı Sıralama</span>
-                            </div>
+                {/* List */}
+                <div className="bg-brand-slate border border-brand-gold/10 rounded-2xl overflow-hidden shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-brand-gold/10 bg-white/[0.01]">
+                                    <th className="pl-8 pr-4 py-5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">NO</th>
+                                    <th className="px-4 py-5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">ÖĞRENCİ</th>
+                                    <th className="px-4 py-5 text-center text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">SEVİYE</th>
+                                    <th className="pr-8 pl-4 py-5 text-right text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">PUAN</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-brand-gold/5">
+                                {topStudents.map((student, index) => {
+                                    const rank = index + 1;
+                                    const isCurrentUser = student.id === currentUser?.uid;
+                                    const level = Math.floor((student.xp || 0) / 500) + 1;
 
-                            <div className="p-2">
-                                {leaderboardData.map((student, index) => (
-                                    <div
-                                        key={student.id}
-                                        className={`flex items-center justify-between p-4 my-2 rounded-2xl transition-all ${student.isCurrentUser
-                                                ? "bg-brand-gold/10 border border-brand-gold/30 shadow-[inset_0_0_20px_rgba(251,191,36,0.05)]"
-                                                : "hover:bg-white/5 border border-transparent"
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            {/* Rank Number */}
-                                            <div className={`w-8 h-8 flex items-center justify-center font-black rounded-full ${index === 0 ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.5)]" :
-                                                    index === 1 ? "bg-gray-300 text-black shadow-[0_0_10px_rgba(209,213,219,0.5)]" :
-                                                        index === 2 ? "bg-amber-700 text-white shadow-[0_0_10px_rgba(180,83,9,0.5)]" :
-                                                            "text-gray-500"
-                                                }`}>
-                                                {index + 1}
-                                            </div>
-
-                                            {/* Avatar & Name */}
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-white/10">
-                                                    <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" />
+                                    return (
+                                        <tr 
+                                            key={student.id}
+                                            className={`group transition-all duration-300 hover:bg-brand-gold/5 ${isCurrentUser ? "bg-brand-gold/[0.03]" : ""}`}
+                                        >
+                                            <td className="pl-8 pr-4 py-5">
+                                                <div className="flex items-center font-bold text-sm">
+                                                    {rank === 1 ? (
+                                                        <Crown className="w-5 h-5 text-brand-gold" />
+                                                    ) : rank === 2 ? (
+                                                        <Medal className="w-5 h-5 text-gray-400" />
+                                                    ) : rank === 3 ? (
+                                                        <Medal className="w-5 h-5 text-amber-700" />
+                                                    ) : (
+                                                        <span className="text-gray-600">{rank}</span>
+                                                    )}
                                                 </div>
-                                                <div>
-                                                    <h4 className={`font-bold ${student.isCurrentUser ? "text-brand-gold" : "text-white"}`}>
-                                                        {student.name}
-                                                    </h4>
-                                                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                                                        {index === 0 && <Medal className="w-3 h-3 text-yellow-500" />}
-                                                        {student.badge}
-                                                    </span>
+                                            </td>
+                                            <td className="px-4 py-5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 rounded-lg overflow-hidden bg-brand-black border border-brand-gold/10 group-hover:border-brand-gold/30 transition-all duration-300">
+                                                        {student.avatar ? (
+                                                            <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center">
+                                                                <UserIcon className="w-4 h-4 text-gray-600" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="font-bold text-sm text-white/80 group-hover:text-white transition-colors">
+                                                        {student.name || "Anonim Öğrenci"}
+                                                        {isCurrentUser && (
+                                                            <span className="ml-2 text-[8px] bg-brand-gold/10 text-brand-gold px-1.5 py-0.5 rounded border border-brand-gold/20 uppercase tracking-tighter">SİZ</span>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        {/* XP Score */}
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-right">
-                                                <div className="font-black text-white">{student.xp.toLocaleString()}</div>
-                                                <div className="text-[10px] text-brand-gold font-bold uppercase tracking-wider">XP</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                                            </td>
+                                            <td className="px-4 py-5 text-center">
+                                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-brand-black border border-brand-gold/10 text-[11px] font-bold text-gray-400 group-hover:border-brand-gold/20 transition-all">
+                                                    <Star className="w-2.5 h-2.5 text-brand-gold" />
+                                                    {level}
+                                                </div>
+                                            </td>
+                                            <td className="pr-8 pl-4 py-5 text-right">
+                                                <span className="font-bold text-sm text-brand-gold/90 group-hover:text-brand-gold transition-colors tabular-nums">
+                                                    {(student.xp || 0).toLocaleString()} <span className="text-[10px] opacity-40 ml-0.5">XP</span>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
+                {/* Info Note */}
+                <div className="mt-12 text-center">
+                    <p className="text-gray-600 text-[11px] tracking-wide uppercase">
+                        Sıralama her 5 dakikada bir güncellenir
+                    </p>
+                </div>
             </div>
         </div>
     );

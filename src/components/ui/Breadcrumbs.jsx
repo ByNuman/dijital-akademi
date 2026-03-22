@@ -9,11 +9,8 @@ export function Breadcrumbs() {
     const routeMap = {
         "courses": "Dersler",
         "course": "Ders Detay",
-        "blog": "Blog",
-        "about": "Hakkımızda",
         "programs": "Programlar",
         "profile": "Profil",
-        "community": "Topluluk",
         "dashboard": "Panel",
         "leaderboard": "Liderlik Tablosu"
     };

@@ -6,13 +6,11 @@ export function Categories() {
     const { courses } = useCourses();
 
     return (
-        <section className="py-24 relative bg-[#101010]">
+        <section className="py-24 relative bg-brand-slate">
             <div className="container mx-auto px-6 md:px-12 relative z-10">
                 <div className="text-center mb-16">
-                    <h2
-                        className="text-4xl md:text-5xl font-black text-white mb-6"
-                    >
-                        İlim <span className="text-brand-gold">Disiplinleri</span>
+                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+                        İlim <span className="text-gold-gradient font-serif italic tracking-tight">Disiplinleri</span>
                     </h2>
                     <p
                         className="text-gray-400 max-w-2xl mx-auto text-lg"

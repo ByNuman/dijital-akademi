@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 export function Footer() {
     return (
-        <footer className="bg-[#101010] border-t border-white/5 pt-20 pb-10 relative overflow-hidden">
+        <footer className="bg-[#050505] border-t border-white/5 pt-20 pb-10 relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none"></div>
 
             <div className="container mx-auto px-6 md:px-12 relative z-10">
@@ -17,7 +17,7 @@ export function Footer() {
                                     className="h-12 w-auto object-contain drop-shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all duration-300 group-hover:drop-shadow-[0_0_25px_rgba(251,191,36,0.8)] group-hover:scale-105" 
                                 />
                             </div>
-                            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-brand-gold to-brand-gold bg-clip-text text-transparent opacity-90 group-hover:opacity-100 transition-all duration-300">
+                            <span className="text-xl font-bold tracking-tight text-gold-gradient opacity-90 group-hover:opacity-100 transition-all duration-300">
                                 Dijital Akademi
                             </span>
                         </Link>
@@ -92,13 +92,13 @@ export function Footer() {
                             }
                         }}>
                             <div className="grid grid-cols-2 gap-3">
-                                <input type="text" name="Ad" placeholder="Adınız" className="bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold transition-colors w-full" required />
-                                <input type="text" name="Soyad" placeholder="Soyadınız" className="bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold transition-colors w-full" required />
+                                <input type="text" name="Ad" placeholder="Adınız" className="bg-[#121212] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold/50 transition-colors w-full" required />
+                                <input type="text" name="Soyad" placeholder="Soyadınız" className="bg-[#121212] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold/50 transition-colors w-full" required />
                             </div>
-                            <input type="email" name="Email" placeholder="E-Posta Adresiniz" className="bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold transition-colors w-full" required />
-                            <textarea name="Mesaj" placeholder="Nasıl yardımcı olabiliriz?" rows="3" className="bg-[#1A1A1A] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold transition-colors w-full resize-none" required></textarea>
+                            <input type="email" name="Email" placeholder="E-Posta Adresiniz" className="bg-[#121212] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold/50 transition-colors w-full" required />
+                            <textarea name="Mesaj" placeholder="Nasıl yardımcı olabiliriz?" rows="3" className="bg-[#121212] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-brand-gold/50 transition-colors w-full resize-none" required></textarea>
                             <input type="hidden" name="_captcha" value="false" />
-                            <button type="submit" className="bg-brand-gold hover:bg-brand-gold-light text-[#101010] font-semibold py-2.5 rounded-xl transition-all w-full mt-1 disabled:opacity-70 disabled:cursor-not-allowed">
+                            <button type="submit" className="bg-gold-gradient font-semibold py-2.5 rounded-xl transition-all w-full mt-1 disabled:opacity-70 disabled:cursor-not-allowed">
                                 Gönder
                             </button>
                         </form>
